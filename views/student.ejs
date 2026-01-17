@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- css and bootsrap -->
+    <link rel="stylesheet" href="../public/lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="../public/lib/font-awesome/css/font-awesome.min.css">
+    <!-- end of css & bootsrap -->
+    <title>RESULT CHECKER</title>
+    <style>
+        .logSec {
+            height: 100vh
+        }
+        
+        div p:first-child {
+            color: white;
+        }
+        
+        section {
+            width: 350px;
+            height: 350px;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="logSec d-flex w-100 bg-secondary justify-content-center align-items-center border br">
+
+        <section class="bg-white ">
+            <% if(error) {%>
+                <div class="alert alert-danger m-3" role="alert">
+                    <%= error?.msg %>
+                </div>
+            <%}%>
+
+            <h5 class="text-center mt-5">Student Result Management</h5>
+
+            <form action="/student/result" method="POST" class="p-3">
+                <div class="form-group">
+                    <label for="rollId">Enter your RollID</label>
+                    <input type="text" required class="form-control" name="rollId">
+                </div>
+
+                <div class="form-group">
+                    <label for="sclass">Class</label>
+
+                    <select name="sclass" id="sclass" class="form-control">
+                        <option value="">Select Class</option>
+                        <% for(const cl of classes) {%>
+                            <option value="<%= cl._id %>"><%=cl.cname%></option>
+                        <%}%>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-success float-right">Search <i class="fa fa-search"></i> </button>
+            </form>
+
+        </section>
+
+    </div>
+</body>
+
+</html>

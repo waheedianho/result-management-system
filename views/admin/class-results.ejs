@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Class Results</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f4f7fb; color:#07324a; padding:16px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif }
+        .report-card {
+            position:relative;
+            max-width:900px;
+            margin: 0 auto 24px auto;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+            border-radius:10px;
+            box-shadow:0 8px 30px rgba(7,50,74,0.12);
+            border-top:8px solid #1e90ff;
+            padding:1.5rem;
+            overflow:hidden;
+        }
+        .report-card::before { content: ""; position:absolute; top:50%; left:50%; width:500px; height:500px; background:url('/public/images/img.png') no-repeat center center; background-size:contain; opacity:0.05; transform:translate(-50%,-50%); pointer-events:none; }
+        .school-name { letter-spacing:8px; font-weight:700; color:#0b4660; font-size:20px }
+        .report-title { font-size:28px; font-weight:800; color:#052833 }
+        .field { background:#eaf6ff; padding:10px; border-radius:6px; border:1px solid rgba(14,87,143,0.06) }
+        .field label { display:block; font-size:11px; color:#09506f; margin-bottom:6px }
+        .field .value { font-weight:700; color:#052833 }
+        .grades th { background:#e3f2ff; color:#074a6b }
+        .final-grade { background:linear-gradient(90deg,#e6f6ff,#ffffff); border:1px solid rgba(7,50,74,0.04); border-radius:8px }
+        .final-grade .label { font-weight:700; color:#064b66 }
+        .final-grade .value { font-size:28px; font-weight:900; color:#0b3d59 }
+        .scale { background:#fff; border:1px dashed rgba(7,50,74,0.06); border-radius:8px }
+        .sig .name { margin-top:40px; font-weight:700 }
+        .sig .title { font-size:13px; color:#09506f }
+        .foot-note { font-size:12px; color:#264d60 }
+        table.result td { padding: 0 !important; }
+        table.result tr td:first-child { padding-left: 15px !important; }
+        /* Ensure each student starts on a new page */
+        .report-card { break-inside: avoid; page-break-inside: avoid; }
+        .report-card + .report-card { break-before: page; page-break-before: always; }
+        /* Better PDF pagination */
+        tr, td, th { page-break-inside: avoid; break-inside: avoid-page; }
+        @page { size: A4; margin: 10mm; }
+        @media print {
+            html, body { height: auto !important; }
+            body { background: #ffffff !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .report-card { page-break-inside: avoid; box-shadow: none !important; margin: 0 auto 0 auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="container text-center mb-3">
+    <button class="btn btn-success btn-lg mr-2" onclick="window.print()">Print All</button>
+    <button class="btn btn-success btn-lg" onclick="downloadAll()">Download All</button>
+</div>
+
+<div id="all-reportcards">
+    <% if (students && students.length) { %>
+        <% students.forEach(function(student, idx) { %>
+            <div class="report-card">
+                <header class="text-center mb-4">
+                    <div class="school-name">Ejigbo ho&nbsp; Baptist &nbsp; High &nbsp; SCHOOL</div>
+                    <div class="report-title">SCHOOL REPORT CARD</div>
+                </header>
+
+                <section class="row mb-4">
+                    <div class="col-md-8">
+                        <h6 class="text-primary">STUDENT INFORMATION</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <div class="field">
+                                    <label>Student name</label>
+                                    <div class="value"><%= student?.name %></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="field">
+                                    <label>Roll ID</label>
+                                    <div class="value"><%= student?.rollId %></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="field">
+                                    <label>Class / Form</label>
+                                    <div class="value"><%= student?.sclass %></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="field">
+                                    <label>Term/Session</label>
+                                    <div class="value"><%= student?.term %>/<%= student?.session %></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-right">
+                        <div><strong>Phone:</strong> 123-456-7890</div>
+                        <div><strong>Email:</strong> hello@reallygreatsite.com</div>
+                        <div class="font-weight-bold mt-3">Principal</div>
+                        <div>Lorna Alvarado</div>
+                    </div>
+                </section>
+
+                <% if(!student.results || student.results.length < 1) { %>
+                    <section>
+                        <h2>No Result yet</h2>
+                    </section>
+                <% } else { %>
+                    <section>
+                        <table class="table table-bordered grades result">
+                            <thead>
+                            <tr class="border">
+                                <th>SUBJECT</th>
+                                <th class="text-center">CA</th>
+                                <th class="text-center">Exam</th>
+                                <th class="text-center">Score</th>
+                                <th class="text-center">GRADE</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <% student.results.forEach(function(result) { %>
+                                <tr>
+                                    <td><%= result?.subject %></td>
+                                    <td class="text-center"><%= result?.ca %></td>
+                                    <td class="text-center"><%= result?.exam %></td>
+                                    <td class="text-center"><%= result?.total %></td>
+                                    <td class="text-center"><%= result?.grade %></td>
+                                </tr>
+                            <% }) %>
+                            </tbody>
+                        </table>
+                        <div class="final-grade d-flex justify-content-between align-items-center p-3 mt-3">
+                            <div>
+                                <div class="label">FINAL GRADE</div>
+                                <div class="small text-muted">Overall performance for the session</div>
+                            </div>
+                            <div class="value">&nbsp;</div>
+                        </div>
+                    </section>
+                <% } %>
+
+                <section class="row mt-4 align-items-end">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="scale p-3">
+                            <h6 class="text-primary">GRADING SCALE</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>A</strong> = 90% - 100%</li>
+                                <li><strong>B</strong> = 80% - 89%</li>
+                                <li><strong>C</strong> = 60% - 79%</li>
+                                <li><strong>D</strong> = 50% - 59%</li>
+                                <li><strong>E</strong> = Under 50%</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-8 d-flex justify-content-around">
+                        <div class="sig text-center">
+                            <div class="title">Principal</div>
+                            <div class="name">Lorna Alvarado</div>
+                        </div>
+                        <div class="sig text-center">
+                            <div class="title">Class Advisor</div>
+                            <div class="name">Ndemi Otieno</div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="foot-note mt-4">Generated on <%= new Date().toLocaleDateString() %></div>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <div class="alert alert-info">No results found for this class.</div>
+    <% } %>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+function downloadAll() {
+  const element = document.getElementById('all-reportcards');
+  try { window.scrollTo(0, 0); } catch(e) {}
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: 'Class_Results.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+    pagebreak: { mode: ['css','legacy'] },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+</script>
+</body>
+</html>

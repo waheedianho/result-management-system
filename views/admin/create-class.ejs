@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+    <body>
+        <div class="container-fluid">
+            <%- include('partials/header') %>
+                <section class="row">
+                    <%- include('partials/nav') %>
+                        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0 ">
+                            <div class="w-100 p-2 bg-white mt-2 mb-2">
+                                <h3 class=" modal-header">Class Creation</h3>
+                                <div class="breadcrumb bg-transparent p-0">
+                                    <div class="breadcrumb-item">Home</div>
+                                    <div class="breadcrumb-item">Subject</div>
+                                    <div class="breadcrumb-item">Create Class</div>
+                                </div>
+                            </div>
+
+                           
+                            <div class="d-flex justify-content-center border">
+                                <div class="col-8 bg-white card">
+                                    <h4 class="p-3">Create Student Class</h4>
+
+                                    <%- include('partials/flash') %>
+                                        <h4 id="err">Fill the corresponding value below</h4>
+
+                                        <form action="" method="POST" class="">
+                                            <div class="form-group">
+                                                <label for="cname">Class Name</label>
+                                                <input type="text" class=" form-control" id="cname" required>
+                                                <small><i>Eg. Grade 1, Grade 2, Grade 3</i></small>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="cnameNum">Class Name in Numeric</label>
+                                                <input type="number" class="form-control" max="9" min="0" id="cnameNum" required>
+                                                <small><i>Eg. 1,2,3,4,5 etc</i></small>
+                                            </div>
+
+
+                                            <div class="btn btn-success mb-3 float-right">
+                                                Submit
+                                                <i class="fa fa-check"></i>
+                                            </div>
+                                        </form>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+        </div>
+
+        <script src="../../public/lib/jquery//jquery.min.js "></script>
+        <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
+        <script src="../../public/js/admin.js"></script>
+
+        <script>
+            $(document).ready(() => {
+                $('.btn').on('click', function() {
+                    let cname = $('#cname').val().toString().toUpperCase(),
+                        cnameNum = $('#cnameNum').val(),
+                        err = $('#err'),
+                        message = $('#message'),
+                        alert = $('.alert'),
+                        flash = $('.flash');
+
+                    if ((cnameNum.length && cname.length) === 0) {
+                        err.css({
+                            display: "block",
+                        })
+                    } else {
+                        $.post('/admin/create-class', {
+                            cname: cname,
+                            cnameNum: cnameNum,
+                        }, (data) => {
+                            data.type != "danger" ? 
+                            flash.removeClass("alert-danger").addClass("alert-success").show(1000)  && message.text(data.message) :
+                            flash.removeClass("alert-sucess").addClass("alert-danger").show(1000) && message.text(data.message)
+                            $('#cname').val("")
+                            $('#cnameNum').val("")
+                        })
+                    }
+
+                })
+
+                $('input').on('focus', () => {
+                    if ($('#err').css('display') != "none" || $('.alert').css('display') != "none") {
+                        $('#err').hide()
+                        $('.alert').hide()
+                    }
+                })
+            })
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,91 @@
+<div class="navPanel col-lg-3 bg-secondary text-white">
+    <p class="text-center pt-2">MAIN CATEGORIES</p>
+    <a href="/admin/dashboard">
+        <h4 class="dashboard"><i class="fa fa-home"></i> Dashboard</h4>
+    </a>
+    <p class="mt-4">APPEARANCE</p>
+
+    <nav>
+        <ul class="navbar-nav border-0">
+            <% if (user.role === 'super-admin') { %>
+            <li class="nav-item">
+                <a href="/admin/manage-schools" class="nav-link">
+                    <i class="fa fa-university pr-3"> </i> Manage Schools
+                </a>
+            </li>
+            <% } %>
+            <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+            <li class="nav-item">
+                <a href="#"class="nav-link">
+                    <i class="fa fa-list-ul pr-3"></i> Student Clases
+                    <i class="fa fa-caret-right  float-right"></i>
+                </a>
+
+                <ul class="bg-dark">
+                    <li>
+                        <a href="/admin/create-class"> <i class="fa fa-edit pr-1"></i> Create Class</a>
+                    </li>
+                    <li><a href="/admin/manage-classes"><i class="fa fa-eye pr-1"></i> Manage Classes</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#"class="nav-link">
+                    <i class="fa fa-book pr-3"> </i> Subjects/Course
+                    <i class="fa fa-caret-right  float-right"></i>
+                </a>
+
+                <ul class="bg-dark">
+                    <li>
+                        <a href="/admin/subject"> <i class="fa fa-edit pr-1"></i> Create Subject</a>
+                    </li>
+                    <li><a href="/admin/manage-subject"><i class="fa fa-eye pr-1"></i> Manage Subjects</a></li>
+                    <li><a href="/admin/subject-combination"><i class="fa fa-edit pr-1"></i> Subject Combination</a></li>
+                    <li><a href="/admin/manage-subject-combination"><i class="fa fa-eye pr-1"></i>Manage Subject Combination</a></li>
+                    <!-- <li><a href="#"><i class="fa fa-plus pr-1"></i> Add Subject</a></li> -->
+                </ul>
+            </li>
+            <% } %>
+            <li class="nav-item">
+                <a href="#"class="nav-link">
+                    <i class="fa fa-users pr-3"> </i> Students
+                    <i class="fa fa-caret-right  float-right"></i>
+                </a>
+
+                <ul class="bg-dark">
+                    <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+                    <li>
+                        <a href="/admin/add-student"> <i class="fa fa-plus pr-1"></i>Add Student</a>
+                    </li>
+                    <% } %>
+                    <li><a href="/admin/manage-student"><i class="fa fa-eye pr-1"></i> Manage Students</a></li>
+                </ul>
+            </li>
+            <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+            <li class="nav-item">
+                <a href="#"class="nav-link">
+                    <i class="fa fa-user-secret pr-3"> </i> Staff
+                    <i class="fa fa-caret-right  float-right"></i>
+                </a>
+
+                <ul class="bg-dark">
+                    <li><a href="/admin/manage-staff"><i class="fa fa-eye pr-1"></i> Manage Staff</a></li>
+                </ul>
+            </li>
+            <% } %>
+            <li class="nav-item">
+                <a href="#"class="nav-link">
+                    <i class="fa fa-print pr-3"></i> Result
+                    <i class="fa fa-caret-right  float-right"></i>
+                </a>
+
+                <ul class="bg-dark">
+                    <li>
+                        <a href="/admin/add-result"> <i class="fa fa-plus pr-1"></i>Add Result</a>
+                    </li>
+                    <li><a href="/admin/manage-result"><i class="fa fa-eye pr-1"></i> Manage Results</a></li>
+                </ul>
+            </li>
+            <li class="nav-item border-0"><a href="#"class="nav-link"><i class="fa fa-lock pr-3"></i> Admin Change Password</a></li>
+        </ul>
+    </nav>
+</div>

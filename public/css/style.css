@@ -1,0 +1,11 @@
+#loginPanel {
+    height: 90vh;
+}
+
+.container-fluid {
+    background-color: aliceblue;
+}
+
+input {
+    border: 0;
+}

@@ -1,0 +1,208 @@
+<%- include('partials/head') %>
+
+<body>
+  <div class="container-fluid">
+    <%- include('partials/header') %>
+    <section class="row">
+      <%- include('partials/nav') %>
+      <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
+        <div class="w-100 p-2 bg-white mt-2 mb-2">
+          <h3 class="modal-header">Manage Staff</h3>
+          <div class="breadcrumb bg-transparent p-0">
+            <div class="breadcrumb-item">Home</div>
+            <div class="breadcrumb-item">Staff</div>
+            <div class="breadcrumb-item">Manage-Staff</div>
+          </div>
+        </div>
+
+        <!-- Modal -->
+        <%- include('../modal/comfirmdelete') %>
+
+        <div class="container-fluid">
+          <div class="row mb-3">
+            <div class="col-12 text-right">
+              <button class="btn btn-primary" data-toggle="modal" data-target="#addStaffModal">
+                <i class="fa fa-plus"></i> Add Staff
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal for Add Staff -->
+          <div class="modal fade" id="addStaffModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Add New Staff</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="addStaffForm">
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label>Full Name</label>
+                      <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                      <label>Email</label>
+                      <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                      <label>Password</label>
+                      <input type="password" name="pswrd" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                      <label>Role</label>
+                      <select name="role" class="form-control" required>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                        <% if (user.role === 'super-admin') { %>
+                        <option value="super-admin">Super Admin</option>
+                        <% } %>
+                      </select>
+                    </div>
+                    <% if (user.role === 'super-admin') { %>
+                    <div class="form-group">
+                      <label>School</label>
+                      <select name="schoolId" class="form-control">
+                        <option value="">None (for Super Admin)</option>
+                        <% schools.forEach(sch => { %>
+                        <option value="<%= sch._id %>"><%= sch.name %></option>
+                        <% }) %>
+                      </select>
+                    </div>
+                    <% } else { %>
+                    <input type="hidden" name="schoolId" value="<%= user.schoolId %>">
+                    <% } %>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Staff</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                  <h4 class="p-3 m-0">View Staff Info</h4>
+                </div>
+
+                <div class="card-body" id="overflow">
+                  <table class="table table-bordered table-striped" id="staff_table">
+                    <thead>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <% if (user.role === 'super-admin') { %>
+                      <th>School</th>
+                      <% } %>
+                      <th>Assigned Class</th>
+                      <th>Action</th>
+                    </thead>
+                    <tbody id="staff_tbody">
+                      <% if (staff.length != 0) { %> <% staff.forEach(doc => { %>
+                      <tr>
+                        <td><%= staff.indexOf(doc) + 1 %></td>
+                        <td>
+                          <input
+                            type="text"
+                            name="name"
+                            value="<%= doc.name %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="email"
+                            name="email"
+                            value="<%= doc.email %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+                        <td>
+                          <select name="role" class="form-control bg-transparent border-0 unclick" disabled>
+                            <option value="super-admin" <%= doc.role === 'super-admin' ? 'selected' : '' %>>Super Admin</option>
+                            <option value="admin" <%= doc.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                            <option value="teacher" <%= doc.role === 'teacher' ? 'selected' : '' %>>Teacher</option>
+                          </select>
+                        </td>
+                        <% if (user.role === 'super-admin') { %>
+                        <td>
+                          <select name="schoolId" class="form-control bg-transparent border-0 unclick" disabled>
+                            <option value="">None</option>
+                            <% schools.forEach(sch => { %>
+                              <option value="<%= sch._id %>" <%= (doc.schoolId && String(doc.schoolId._id || doc.schoolId) === String(sch._id)) ? 'selected' : '' %>><%= sch.name %></option>
+                            <% }) %>
+                          </select>
+                        </td>
+                        <% } %>
+                        <td>
+                          <select name="assignedClass" class="form-control bg-transparent border-0 unclick" disabled>
+                            <option value="">None</option>
+                            <% classes.forEach(cls => { %>
+                              <option value="<%= cls._id %>" <%= (doc.assignedClass && String(doc.assignedClass._id || doc.assignedClass) === String(cls._id)) ? 'selected' : '' %>><%= cls.cname %></option>
+                            <% }) %>
+                          </select>
+                        </td>
+                        <td class="text-center actionBtn">
+                          <i
+                            class="btn btn-info fa fa-edit edit"
+                            id="<%= doc._id %>"
+                          ></i>
+                          <i
+                            class="btn btn-danger fa fa-trash-o btn-delete"
+                            data-target="#delete"
+                            data-toggle="modal"
+                            id="<%= doc._id %>"
+                          ></i>
+                        </td>
+                      </tr>
+                      <% }) %> <% } else{%>
+                      <tr><td colspan="6" class="text-center text-muted">No staff found</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/public/lib/jquery//jquery.min.js "></script>
+  <script src="/public/lib/bootstrap/js/bootstrap.min.js "></script>
+  <script src="/public/js/ajaxDelete.js"></script>
+  <script src="/public/js/edit.js"></script>
+  <script src="/public/js/admin.js"></script>
+
+  <!-- datatable -->
+  <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+  <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+  <script>
+    const url = '<%= url %>';
+    $(function () {
+      $('table').DataTable({
+        responsive: true,
+      });
+
+      $('#addStaffForm').submit(function(e) {
+        e.preventDefault();
+        const data = $(this).serialize();
+        $.post('/crateadmin', data, function(res) {
+          location.reload();
+        }).fail(function(err) {
+          alert('Error adding staff: ' + (err.responseJSON?.message || 'Unknown error'));
+        });
+      });
+    });
+  </script>
+</body>

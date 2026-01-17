@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+
+    <body>
+        <div class="container-fluid">
+            <%- include('partials/header') %>
+                <section class="row">
+                    <%- include('partials/nav') %>
+
+                        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
+                            <div class="w-100 p-2 bg-white mt-2 mb-2">
+                                <h3 class=" modal-header">Declare Result </h3>
+                                <div class="breadcrumb bg-transparent p-0">
+                                    <div class="breadcrumb-item">Home</div>
+                                    <div class="breadcrumb-item">Result</div>
+                                    <div class="breadcrumb-item">Add Result</div>
+                                </div>
+                            </div>
+                            <div class="card m-2 p-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5>For already typed Results</h5>
+                                   <div class="d-flex">
+                                       <select class="form-control mr-3 " id="select_class">
+                                           <option value="">Select Class Template</option>
+                                           <% classes.forEach(element => { %>
+                                               <option value="<%= element._id %>"><%= element.cname %></option>
+                                               <% }) %>
+                                       </select>
+                                       <button id="download_template" class="btn btn-success">Download Template</button>
+                                   </div>
+                                </div>
+
+                                <div class="alert alert-success alert-dismissible fade show" role="alert" id="feedback">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                    <strong>FIle upload successfully</strong>
+                                </div>
+                                <form action="/admin/add-result" class="dropzone" id="upload-widget" enctype="multipart/form-data"></form>
+                            </div>
+
+                            <div class="card m-2 p-3">
+
+                                <h5>Declare a Result</h5>
+                                <%- include('partials/flash') %>
+                                    <h4 id="err">Fill the corresponding value below</h4>
+
+                                    <form action="" method="POST" class="" >
+<!--                                        <input name="dataType"  type="text" value="json" hidden=""/>-->
+                                        <div class="form-row m-3">
+                                            <label for="sclass" class="col-2">Class: </label>
+                                            <div class="col-10">
+
+
+                                                <select name="sclass" id="sclass" class="form-control">
+                                                    <option value="">Select class</option>
+                                                    <% classes.forEach(element => { %>
+                                                        <option value="<%= element._id %>" class="rmd"> <%= element.cname %> </option>
+                                                        <% }) %>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-row m-3">
+                                            <label for="sname" class="col-2">Student Name: </label>
+                                            <div class="col-10">
+                                                <select name="sname" id="sname" class="form-control">
+                                                    <option value="">Select Student</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="" id="result"></div>
+
+                                        <div class="form-row m-3 justify-content-end">
+                                            <button type="button" class="btn btn-success btn-lg" id="formSubmit">Add</button>
+                                        </div>
+                                    </form>
+                            </div>
+                        </div>
+                </section>
+        </div>
+
+        <script src="../../public/lib/jquery/jquery.min.js "></script>
+        <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
+        <script src="../../public/lib/dropzone-5.7.0/dist/dropzone.js"></script>
+        <script src="../../public/js/admin.js"></script>
+        <script src="/public/js/ajax.js"></script>
+        <script>
+            // console.log(students)
+            $(document).ready(() => {
+
+                // console.log("clicked")
+                $("select, input").on('focus', () => {
+                    if ($('#err').css('display') != "none" || $('.flash').css('display') != "none") {
+                        console.log('err display')
+                        $('#err').hide()
+                        $('.alert').hide()
+                    }
+                })
+                $('#formSubmit').on('click', function () {
+
+                    console.log("clicked submit")
+
+                    const sclass = document.querySelector('#sclass').value;
+                    const student = document.querySelector('#sname').value;
+                    const flash = $('.flash')
+
+                    // collect all subject rows by their input id suffixes
+                    const caInputs = Array.from(document.querySelectorAll('input[id$="_ca"]'));
+                    const examInputs = Array.from(document.querySelectorAll('input[id$="_exam"]'));
+
+                    console.log(caInputs)
+
+
+                    // map by subject-combination id (prefix before _ca/_exam)
+                    const caById = new Map(
+                        caInputs.map(i => [i.id.replace(/_ca$/, ''), i.value.trim()])
+                    );
+                    const examById = new Map(
+                        examInputs.map(i => [i.id.replace(/_exam$/, ''), i.value.trim()])
+                    );
+
+
+                    // build payload per subject
+                    const results = [];
+                    for (const subjectComboId of new Set([...caById.keys(), ...examById.keys()])) {
+                        console.log(subjectComboId)
+                        const ca = Number(caById.get(subjectComboId) || 0);
+                        const exam = Number(examById.get(subjectComboId) || 0);
+
+                        // let totalScore = ca + exam;
+                        // let grade = '';
+                        // if (totalScore < 39) grade = 'F';
+                        // else if (totalScore > 39 && totalScore <= 49) grade = 'D';
+                        // else if (totalScore > 49 && totalScore <= 59) grade = 'C';
+                        // else if (totalScore > 59 && totalScore <= 69) grade = 'B2';
+                        // else if (totalScore > 69 && totalScore <= 79) grade = 'B1';
+                        // else if (totalScore > 79 && totalScore <= 89) grade = 'A';
+                        // else if (totalScore > 89 && totalScore <= 100) grade = 'A+';
+                        // else grade = '-';
+
+                        results.push({
+                            subject: subjectComboId,
+                            ca_score: ca,
+                            exam_score: exam,
+                            session: "2025/2026",
+                            term: "First",
+                            isRetake: false,
+                            // totalScore: ca + exam,
+                            student: student,
+                            sclass: sclass,
+                            // grade: grade
+
+                            // include more fields if present on the page
+                            // grade, session, term, isRetake, totalScore, student
+                        });
+                    }
+
+                    console.log("are you here")
+                    $.post('/admin/add-result', {
+                        // sclass: sclass,
+                        // sname: sname,
+                        // subject: subject,
+                        // score: score,
+                        type: "json",
+                        results: results,
+
+                    }, (data) => {
+                        const successMessage = `result uploaded successfully`
+                        data.status == 404 ? (
+                            flash.css({
+                                display: 'flex'
+                            }).removeClass('alert-sucess').addClass('alert-danger') &&
+                            $('#message').html(data.message)
+                        ) : (
+                            flash.css({
+                                display: 'flex'
+                            }) &&
+                            $('#message').html(successMessage)
+                        );
+
+                        console.log(data)
+                        $('#sclass').val("");
+                        $('#sname').val("");
+                        $('#subject').val("");
+                        $('#score').val("");
+                    })
+
+
+                    //
+                    // let sclass = $('#sclass').val()
+                    // sname = $('#sname').val(),
+                    //     subject = $('#subject').val(),
+                    //     score = $('#score').val(),
+                    //     flash = $('.flash')
+                    // console.log(typeof score)
+                    // if ((sclass.length &&
+                    //     sname.length &&
+                    //     subject.length &&
+                    //     score.length) === 0) {
+                    //     $('#err').css({
+                    //         display: "block",
+                    //     })
+                    // } else {
+                    //     $.post('/admin/add-result', {
+                    //         sclass: sclass,
+                    //         sname: sname,
+                    //         subject: subject,
+                    //         score: score,
+                    //
+                    //     }, (data) => {
+                    //         const successMessage = `<strong>${subject}<strong/> result for <strong>${sname}<strong/> uploaded successfully`
+                    //         data.status == 404 ? (
+                    //             flash.css({
+                    //                 display: 'flex'
+                    //             }).removeClass('alert-sucess').addClass('alert-danger') &&
+                    //             $('#message').html(data.message)
+                    //         ):(
+                    //             flash.css({
+                    //                     display: 'flex'
+                    //                 }) &&
+                    //                 $('#message').html(successMessage)
+                    //         );
+                    //
+                    //         console.log(data)
+                    //         $('#sclass').val("");
+                    //         $('#sname').val("");
+                    //         $('#subject').val("");
+                    //         $('#score').val("");
+                    //     })
+                    // }
+                })
+
+                $('#download_template').click(() => {
+                    // console.log("clicked")
+                    const classId = $('#select_class').val();
+
+                    fetch(`/admin/results/template/${classId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("Network response was not ok")
+                            }
+                            return response.blob(); // Return the blob from first then
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = 'results_template.xlsx'; // Changed filename to be more descriptive
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a); // Clean up by removing the element
+                        })
+                        .catch(error => {
+                            console.error('Error downloading template:', error);
+                            // Optionally show error to user
+                            alert('Failed to download template. Please try again.');
+                        });
+                });
+                //-----------------DropZone------------------------
+                Dropzone.options.uploadWidget = {
+                    maxFiles: 1,
+                    dictDefaultMessage: 'Upload ur xlsx file here',
+                    acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    init: function () {
+                        this.on("success", function (file, responseText) {
+                            // alert("Added file");
+                            this.removeFile(file)
+                            $('#feedback').removeAttr('id')
+                            console.log(responseText)
+                        });
+                    }
+                }
+                //--------------------------------------------------
+
+                // $(".custom-file-input").on("change", function() {
+                //     var fileName = $(this).val().split("\\").pop();
+                //     $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+                // });
+
+            })
+
+        </script>
+    </body>
+
+</html>

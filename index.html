@@ -1,0 +1,16 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+<select id="subjects" multiple>
+    <option value="math">Math</option>
+    <option value="english">English</option>
+    <option value="bio">Biology</option>
+    <option value="cs">Computer Science</option>
+</select>
+
+<script>
+    new Choices('#subjects', {
+        removeItemButton: true,
+        searchEnabled: true
+    });
+</script>

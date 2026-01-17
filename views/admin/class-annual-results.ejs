@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Annual Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    tr, td, th { page-break-inside: avoid; break-inside: avoid-page; }
+    .report-card { break-inside: avoid; }
+    .report-card + .report-card { page-break-before: always; break-before: page; }
+    @page { size: A4; margin: 5mm; }
+    @media print {
+      html, body { height: auto !important; }
+      body { background: #ffffff !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr, td, th { page-break-inside: avoid; }
+      .report-card { page-break-inside: avoid; box-shadow: none !important; }
+      .report-card + .report-card { page-break-before: always; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen p-6">
+  <div class="max-w-7xl mx-auto mb-6 text-center">
+    <button class="px-6 py-3 bg-green-600 text-white rounded shadow mr-3 no-print html2pdf__ignore" onclick="window.print()">Print All</button>
+    <button class="px-6 py-3 bg-green-600 text-white rounded shadow no-print html2pdf__ignore" onclick="downloadAll()">Download All</button>
+  </div>
+
+  <div id="all-reportcards" class="space-y-10">
+    <% if (reports && reports.length) { %>
+      <% reports.forEach(function(report, index) { %>
+        <main class="max-w-7xl mx-auto report-card" id="reportcard-<%= index %>">
+          <div class="border-b-4 border-black pb-8 mb-8">
+            <div class="flex items-start gap-8">
+            <div class="flex-shrink-0">
+              <div class="w-32 h-32 flex items-center justify-center">
+                <div class="text-center">
+                  <img 
+                    src="/public/images/logo.png"
+                    alt="Student photo"
+                    class="w-full h-full object-cover rounded"
+                  />
+                </div>
+              </div>
+            </div>
+
+              <div class="flex-1 text-center">
+                <h1 class="text-2xl font-bold text-purple-900 mb-2"><%= report.schoolName %></h1>
+                <p class="text-xs text-gray-700 mb-1"><%= report.schoolAddress %></p>
+                <p class="text-xs text-blue-600">
+                  Tel: <%= report.schoolPhone %>, Email: <%= report.schoolEmail %>, Website: <%= report.schoolWebsite %>
+                </p>
+                <h2 class="text-2xl font-bold text-purple-900 mt-4">Student Performance Report</h2>
+              </div>
+
+              <div class="flex-shrink-0">
+                <div class="w-32 h-40 bg-gray-300 rounded border-2 border-gray-400">
+                  <img src="<%= report.student.photoUrl %>" alt="Student photo" class="w-full h-full object-cover rounded" onerror="this.onerror=null;this.src='/public/student-photo-portrait.jpg';" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <div class="flex justify-between items-start gap-8">
+              <div class="flex-1 grid grid-cols-3 gap-6">
+                <div>
+                  <p class="text-sm"><span class="font-semibold">Name:</span> <%= report.student.name %></p>
+                  <p class="text-sm"><span class="font-semibold">Class:</span> <%= report.student.class %></p>
+                </div>
+                <div>
+                  <p class="text-sm"><span class="font-semibold">Session:</span> <%= report.student.session %></p>
+                  <p class="text-sm"><span class="font-semibold">Term No:</span> <%= report.student.term %></p>
+                </div>
+                <div>
+                  <p class="text-sm"><span class="font-semibold">Gender:</span> <%= report.student.gender %></p>
+                  <p class="text-sm"><span class="font-semibold">Admission No:</span> <%= report.student.admissionNo %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% if (report.student && report.student.results && report.student.results.length > 0) { %>
+          <div class="mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Term Results</h3>
+            <div class="overflow-x-auto border-2 border-gray-300">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="bg-purple-900 text-white">
+                    <th class="font-bold p-2 text-left">Subject</th>
+                    <th class="font-bold p-2 text-center">CA</th>
+                    <th class="font-bold p-2 text-center">Exam</th>
+                    <th class="font-bold p-2 text-center">Score</th>
+                    <th class="font-bold p-2 text-center">Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% report.student.results.forEach(function(result, index) { %>
+                  <tr class="<%= index % 2 === 0 ? 'bg-blue-50' : 'bg-white' %> border-b">
+                    <td class="font-semibold p-2"><%= result.subject %></td>
+                    <td class="p-2 text-center"><%= result.ca %></td>
+                    <td class="p-2 text-center"><%= result.exam %></td>
+                    <td class="p-2 text-center"><%= result.total %></td>
+                    <td class="p-2 text-center font-bold"><%= result.grade %></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <% } %>
+
+          <div class="mb-8">
+            <!-- <h3 class="text-lg font-bold text-gray-800 mb-4">Cognitive Domain - Annual Report</h3> -->
+            <div class="overflow-x-auto border-2 border-gray-300">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="bg-purple-900 text-white">
+                    <th class="font-bold p-2 text-left">Subjects</th>
+                    <th class="font-bold p-2 text-center">First Term</th>
+                    <th class="font-bold p-2 text-center">Second Term</th>
+                    <th class="font-bold p-2 text-center">Third Term</th>
+                    <th class="font-bold p-2 text-center">Subject Average</th>
+                    <th class="font-bold p-2 text-center">Grade</th>
+                    <th class="font-bold p-2 text-center">Remarks</th>
+                    <th class="font-bold p-2 text-center">Rank</th>
+                    <th class="font-bold p-2 text-center">Highest</th>
+                    <th class="font-bold p-2 text-center">Lowest</th>
+                    <th class="font-bold p-2 text-center">Class Average</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% report.subjects.forEach((subject, idx) => { %>
+                  <tr class="<%= idx % 2 === 0 ? 'bg-blue-50' : 'bg-white' %> border-b">
+                    <td class="font-semibold p-2"><%= subject.name %></td>
+                    <td class="p-2 text-center"><%= subject.firstTerm %></td>
+                    <td class="p-2 text-center"><%= subject.secondTerm %></td>
+                    <td class="p-2 text-center"><%= subject.thirdTerm %></td>
+                    <td class="p-2 text-center"><%= subject.average %></td>
+                    <td class="p-2 text-center font-bold"><%= subject.grade %></td>
+                    <td class="p-2 text-center"><%= subject.remarks %></td>
+                    <td class="p-2 text-center"><%= subject.rank %></td>
+                    <td class="p-2 text-center"><%= subject.highest %></td>
+                    <td class="p-2 text-center"><%= subject.lowest %></td>
+                    <td class="p-2 text-center"><%= subject.classAverage %></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Annual Performance Summary</h3>
+            <div class="border-2 border-purple-900">
+              <div class="grid grid-cols-4 gap-0">
+                <div class="bg-purple-900 text-white font-bold text-sm p-1 border-r border-purple-900">Metric</div>
+                <div class="bg-purple-900 text-white font-bold text-sm p-1 border-r border-purple-900">Value</div>
+                <div class="bg-purple-900 text-white font-bold text-sm p-1 border-r border-purple-900">Metric</div>
+                <div class="bg-purple-900 text-white font-bold text-sm p-1">Value</div>
+
+                <div class="text-sm p-1 border-r border-b border-gray-300 font-semibold">Total Marks Obtained</div>
+                <div class="text-sm p-1 border-r border-b border-gray-300"><%= report.summary.totalMarksObtained %></div>
+                <div class="text-sm p-1 border-r border-b border-gray-300 font-semibold">Annual Average Grade</div>
+                <div class="text-sm p-1 border-b border-gray-300"><%= report.summary.annualAverageGrade %></div>
+
+                <div class="text-sm p-1 border-r border-b border-gray-300 font-semibold">Total Marks Obtainable</div>
+                <div class="text-sm p-1 border-r border-b border-gray-300"><%= report.summary.totalMarksObtainable %></div>
+                <div class="text-sm p-1 border-r border-b border-gray-300 font-semibold">Performance Remarks</div>
+                <div class="text-sm p-1 border-b border-gray-300"><%= report.summary.performanceRemarks %></div>
+
+                <div class="text-sm p-1 border-r border-b border-gray-300 font-semibold">Class Population</div>
+                <div class="text-sm p-1 border-r border-b border-gray-300"><%= report.summary.classPopulation %></div>
+                <div class="text-sm p-1 border-r border-b border-gray-300 font-semibold">Class Position</div>
+                <div class="text-sm p-1 border-b border-gray-300"><%= report.summary.classPosition %></div>
+
+                <div class="text-sm p-1 border-r font-semibold">Annual Average Score</div>
+                <div class="text-sm p-1 border-r"><%= report.summary.annualAverageScore %></div>
+                <div class="text-sm p-1 border-r font-semibold">Promotion Status</div>
+                <div class="text-sm p-1"><%= report.summary.promotionStatus %></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Annual Grade Analysis</h3>
+            <div class="border-2 border-gray-300 overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-purple-900 text-white">
+                    <th class="font-bold text-sm p-3 text-left">Grade</th>
+                    <% report.gradeScale.forEach(grade => { %>
+                      <th class="font-bold text-sm p-3 text-center"><%= grade %></th>
+                    <% }); %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="bg-gray-50">
+                    <td class="font-semibold text-sm p-3">No. of Subjects</td>
+                    <% report.gradeDistribution.forEach(count => { %>
+                      <td class="text-sm p-3 text-center"><%= count %></td>
+                    <% }); %>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex gap-8 mt-8 items-center">
+            <!-- <div class="flex-shrink-0">
+              <div class="w-32 h-32 bg-black p-2">
+                <img src="<%= report.qrCodeUrl %>" alt="QR Code" class="w-full h-full" />
+              </div>
+            </div> -->
+            <!-- <div class="flex-1">
+              <h4 class="font-bold text-gray-800 mb-3">Grade Scale</h4>
+              <div class="text-xs text-gray-700 space-y-1 bg-gray-50 p-4 rounded border border-gray-300">
+                <p><%= report.gradeScaleDescription %></p>
+                <p class="font-semibold mt-2">Scan the QR code to verify</p>
+              </div>
+            </div> -->
+          </div>
+
+          <div class="text-center mt-8">
+            <button class="px-6 py-3 bg-green-600 text-white rounded shadow no-print html2pdf__ignore" onclick="downloadOne('<%= index %>', '<%= (report.student && report.student.name) ? report.student.name : Student %>')">Download</button>
+          </div>
+        </main>
+      <% }) %>
+    <% } else { %>
+      <div class="max-w-3xl mx-auto text-center text-gray-700">No annual reports found for this class.</div>
+    <% } %>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    function safeFileName(name) {
+      return (name || 'Report').replace(/[^a-z0-9\-\_\s]/gi, '').trim().replace(/\s+/g, '_') || 'Report';
+    }
+    function downloadOne(idx, studentName) {
+      var element = document.getElementById('reportcard-'+idx);
+      var filename = safeFileName(studentName) + '_ReportCard.pdf';
+      try { window.scrollTo(0, 0); } catch(e) {}
+      var opt = { margin: [10,10,10,10], filename: filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, pagebreak: { mode: ['css','legacy'] }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+      html2pdf().set(opt).from(element).save();
+    }
+    function downloadAll() {
+      var element = document.getElementById('all-reportcards');
+      try { window.scrollTo(0, 0); } catch(e) {}
+      var opt = { margin: [10,10,10,10], filename: 'Class_Annual_Results.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, pagebreak: { mode: ['css','legacy'] }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+      html2pdf().set(opt).from(element).save();
+    }
+  </script>
+</body>
+</html>

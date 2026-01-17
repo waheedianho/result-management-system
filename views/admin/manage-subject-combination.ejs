@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+
+<body>
+<div class="container-fluid">
+    <%- include('partials/header') %>
+    <section class="row">
+        <%- include('partials/nav') %>
+        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
+            <div class="w-100 p-2 bg-white mt-2 mb-2">
+                <h3 class="modal-header">Manage Subjects</h3>
+                <div class="breadcrumb bg-transparent p-0">
+                    <div class="breadcrumb-item">Home</div>
+                    <div class="breadcrumb-item">Subject</div>
+                    <div class="breadcrumb-item">Manage-Subjects-Combination</div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <%- include('../modal/comfirmdelete') %>
+
+            <div class="d-flex flex-wrap justify-content-center">
+                <div class="w-100">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="p-3">View Subject Combination Info</h4>
+                            </div>
+
+                            <div class="card-body" id="overflow">
+                                <table class="table table-bordered table-striped" id="subject_combo">
+                                    <thead>
+                                    <th>#</th>
+                                    <th>Class Name</th>
+                                    <th>Subject</th>
+                                    <th>Action</th>
+
+                                    </thead>
+                                    <tbody>
+                                    <% if (docs.length != 0) { %> <% docs.forEach(doc => { %>
+                                        <tr>
+                                            <td><%= docs.indexOf(doc) + 1 %></td>
+                                            <td>
+                                                <%= doc?.class?.cname %>
+                                            </td>
+                                            <td>
+                                                <%= doc.subject %>
+
+                                            </td>
+
+                                            <td class="text-center actionBtn">
+                                                <i
+                                                        class="btn btn-danger fa fa-trash-o btn-delete"
+                                                        data-target="#delete"
+                                                        data-toggle="modal"
+                                                        id="<%= doc._id %>"
+                                                ></i>
+                                            </td>
+                                        </tr>
+                                    <% }) %> <% } else{%>
+                                        <p>You have not register any Subject</p>
+                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="../../public/lib/jquery/jquery.min.js "></script>
+<script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
+<script src="/public/js/edit.js"></script>
+<script src="/public/js/ajaxDelete.js"></script>
+<script src="../../public/js/admin.js"></script>
+
+<!-- datatable -->
+<script src="../../public/lib/dt/datatables/jquery.dataTables.js"></script>
+<script src="../../public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+
+<script>
+    const url = "<%= url %>";
+
+    $(function () {
+        // $('subject_combo').DataTable({
+        //     responsive: true
+        // })
+
+        $('#subject_combo').DataTable({
+            paging: true,
+            searching: true,
+            ordering: false,
+            info: false,
+            responsive: true,
+
+        })
+    })
+</script>
+</body>
+</html>

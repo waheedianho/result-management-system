@@ -1,0 +1,196 @@
+<%- include('partials/head') %>
+
+<body>
+  <div class="container-fluid">
+    <%- include('partials/header') %>
+    <section class="row">
+      <%- include('partials/nav') %>
+      <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
+        <div class="w-100 p-2 bg-white mt-2 mb-2">
+          <h3 class="modal-header">Manage Student</h3>
+          <div class="breadcrumb bg-transparent p-0">
+            <div class="breadcrumb-item">Home</div>
+            <div class="breadcrumb-item">Subject</div>
+            <div class="breadcrumb-item">Manage-Students</div>
+          </div>
+        </div>
+
+        <!-- Modal -->
+        <%- include('../modal/comfirmdelete') %>
+
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                  <h4 class="p-3 m-0">View Student Info</h4>
+                  <div class="d-flex align-items-center">
+                    <label class="mr-2 mb-0">Filter by Class:</label>
+                    <select id="filter_class" class="form-control">
+                      <option value="">All Classes</option>
+                      <% (classes || []).forEach(element => { %>
+                        <option value="<%= element._id %>" <%= (selectedClass && String(selectedClass) === String(element._id)) ? 'selected' : '' %>><%= element.cname %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="card-body" id="overflow">
+                  <table class="table table-bordered table-striped" id="students_table">
+                    <thead>
+                      <th>#</th>
+                      <th>Student Name</th>
+                      <th>Roll ID</th>
+                      <th>Email</th>
+                      <th>Gender</th>
+                      <th>Photo</th>
+                      <th>Class</th>
+                      <th>DOB</th>
+                      <th>Craetion Date</th>
+                      <th>Modifield Dated</th>
+                      <th>Action</th>
+                    </thead>
+                    <tbody id="students_tbody">
+                      <% if (docs.length != 0) { %> <% docs.forEach(doc => { %>
+                      <tr>
+                        <td><%= docs.indexOf(doc) + 1 %></td>
+                        <td>
+                          <input
+                            type="text"
+                            name="fname"
+                            value="<%= doc.fname %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+
+                        <td>
+                          <input
+                            type="text"
+                            name="rollId"
+                            value="<%= doc.rollId %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="email"
+                            name="email"
+                            value="<%= doc.email %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            name="gender"
+                            value="<%= doc.gender %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <img src="<%= doc.photoUrl ? doc.photoUrl : '/public/student-photo-portrait.jpg' %>" alt="photo" style="width:48px;height:48px;object-fit:cover;border:1px solid #ccc;border-radius:4px;margin-right:8px;" onerror="this.onerror=null;this.src='/public/student-photo-portrait.jpg';" />
+                            <div>
+                              <button type="button" class="btn btn-sm btn-secondary btn-upload-photo" data-id="<%= doc._id %>">Change</button>
+                              <input type="file" accept="image/*" class="d-none file-passport" data-id="<%= doc._id %>">
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            name="sclass"
+                            value="<%= doc.sclass %>"
+                            class="form-control bg-transparent border-0 unclick"
+                            disabled
+                          />
+                        </td>
+                        <td><%= doc.dob.toDateString() %></td>
+                        <td><%= doc.createdAt.toLocaleString() %></td>
+                        <td><%= doc.updatedAt.toLocaleString() %></td>
+                        <td class="text-center actionBtn">
+                          <i
+                            class="btn btn-info fa fa-edit edit"
+                            id="<%= doc._id %>"
+                          ></i>
+                          <i
+                            class="btn btn-danger fa fa-trash-o btn-delete"
+                            data-target="#delete"
+                            data-toggle="modal"
+                            id="<%= doc._id %>"
+                          ></i>
+                        </td>
+                      </tr>
+                      <% }) %> <% } else{%>
+                      <tr><td colspan="10" class="text-center text-muted">No students found</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/public/lib/jquery//jquery.min.js "></script>
+  <script src="/public/lib/bootstrap/js/bootstrap.min.js "></script>
+  <script src="/public/js/ajaxDelete.js"></script>
+  <script src="/public//js/edit.js"></script>
+  <script src="/public/js/admin.js"></script>
+
+  <!-- datatable -->
+  <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+  <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+  <!-- <script src="/public/lib/dt/datatables-responsive/js/dataTables.responsive.js"></script> -->
+  <script>
+    const url = '<%= url %>';
+    $(function () {
+      const dt = $('table').DataTable({
+        responsive: true,
+      });
+
+      // When class filter changes, reload the page with query param for server-side filtering
+      $('#filter_class').change(function() {
+        const classId = this.value;
+        const baseUrl = window.location.pathname;
+        if (!classId) {
+          window.location.href = baseUrl; // all
+        } else {
+          const search = new URLSearchParams(window.location.search);
+          search.set('sclass', classId);
+          window.location.href = `${baseUrl}?${search.toString()}`;
+        }
+      });
+
+      // Photo upload handlers
+      $(document).on('click', '.btn-upload-photo', function() {
+        const id = $(this).data('id');
+        const input = $(this).closest('td').find('.file-passport');
+        input.trigger('click');
+      });
+      $(document).on('change', '.file-passport', function() {
+        const file = this.files && this.files[0] ? this.files[0] : null;
+        const id = $(this).data('id');
+        if (!file) return;
+        if (file.size > 1048576) { alert('Passport image must be ≤ 1MB'); $(this).val(''); return; }
+        const fd = new FormData();
+        fd.append('passport', file);
+        $.ajax({
+          url: url + '/' + id,
+          method: 'PUT',
+          data: fd,
+          processData: false,
+          contentType: false,
+          success: function() { location.reload(); }
+        });
+      });
+    });
+  </script>
+</body>

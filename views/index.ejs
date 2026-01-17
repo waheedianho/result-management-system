@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../public/lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="../public/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../public/css/style.css">
+    <title>STUDENT RESULT MANAGEMENT SYSTEM</title>
+    <style>
+        input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid bg">
+        <h3 class="text-center p-3">STUDENT RESULT MANAGEMENT SYSTEM</h3>
+
+        <div class="d-flex justify-content-center align-items-center w-100" id="loginPanel">
+            <div class="container"> 
+                 <div class="row mb-5">
+                    <div class="student col-sm-12 col-md-5 p-5">
+                        <div class="card">
+                            <div class=" card-body text-center">
+                                <h5>For Students</h5>
+                                <p>Student Result Management System</p>
+                                <h6>Search your result <a href="/student/login" target="blank">Click here</a></h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin col-sm-12 col-md-7 p-5">
+                        <div class="card">
+                            <div class=" card-body">
+                                <h5 class="text-center">Admin Login</h5>
+                                <p>Student Result Management System</p>
+                                <form action="/admin/dashboard" method="POST">
+                                    <div class=" form-row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-control">
+                                                <div class="d-flex">
+                                                    <div class="col-1 p-0 border-right">
+                                                        <i class="fa fa-envelope"></i>
+                                                    </div>
+                                                    <div class="col-11 p-0">
+                                                        <input type="email" name="username" id="email" class="w-100 p-0" required>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class=" form-row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-control">
+                                                <div class="d-flex">
+                                                    <div class="col-1 p-0 border-right">
+                                                        <i class="fa fa-lock"></i>
+                                                    </div>
+                                                    <div class="col-11 p-0">
+                                                        <input type="password" name="password" id="pswrd" class="w-100 p-0" required>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success" id="login" ><i class=" far fa fa-sign-in"></i> Login</button>
+                            </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+             </div>
+
+        </div>
+
+
+    </div>
+    <!-- <footer class="fixed-bottom w-100 text-center bg-success p-2 text-white">
+        <h6>WAHEEDIANHO 2020 SRM</h6>
+        <p>Design and Develop by <strong>Ogidi Safiu Waheed</strong></p>
+    </footer> -->
+    </div>
+</body>
+</html>
