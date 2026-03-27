@@ -19,6 +19,11 @@ const staffSchema = new Schema(
       enum: ['super-admin', 'admin', 'teacher'],
       default: 'teacher',
     },
+    status: {
+        type: String,
+        enum: ['active', 'inactive', 'pending'],
+        default: 'active'
+    },
     schoolId: {
       type: Schema.Types.ObjectId,
       ref: 'schools',

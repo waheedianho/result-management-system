@@ -10,7 +10,8 @@ doClassCreate = (req, res, next) => {
   console.log(req.body);
   const data = { ...req.body, schoolId: req.user.schoolId };
   ClassModel.create(data)
-    .then(resp => {
+    .then(async resp => {
+      await logAudit(req, 'CREATE', 'Class', resp._id, { cname: resp.cname });
       res.json({
         type: 'sucess',
         message: `${resp.cname} class added sucessfully`,
@@ -37,7 +38,8 @@ manageClasses = (req, res, next) => {
 deleteClass = (req, res) => {
   console.log(req.params.id);
   ClassModel.findOneAndDelete({ _id: req.params.id, schoolId: req.user.schoolId })
-    .then(resp => {
+    .then(async resp => {
+      if (resp) await logAudit(req, 'DELETE', 'Class', resp._id, { cname: resp.cname });
       res.json(resp);
     })
     .catch(err => res.json(err));

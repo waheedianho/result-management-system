@@ -65,7 +65,10 @@ dostudentAdmission = (req, res) => {
         payload.photoUrl = '/public/student/' + req.file.filename;
       }
       Students.create(payload)
-        .then(resp => res.json(resp))
+        .then(async resp => {
+            await logAudit(req, 'CREATE', 'Student', resp._id, { rollId: resp.rollId });
+            res.json(resp);
+        })
         .catch(err => res.json(err));
     });
   } else {
@@ -120,6 +123,7 @@ dostudentAdmission = (req, res) => {
                 email,
                 schoolId: req.user.schoolId
               });
+              await logAudit(req, 'CREATE', 'Student', newStu._id, { rollId: newStu.rollId, bulk: true });
             } else {
               existuser.push(user.fname);
             }
@@ -208,7 +212,10 @@ updateStudent = (req, res) => {
     });
   } else {
     Students.findOneAndUpdate({ _id: req.params.id, schoolId: req.user.schoolId }, { $set: req.body }, { new: true })
-      .then(() => res.json('success'))
+      .then(async () => {
+          await logAudit(req, 'UPDATE', 'Student', req.params.id, req.body);
+          res.json('success');
+      })
       .catch(err => res.json(err));
   }
 };

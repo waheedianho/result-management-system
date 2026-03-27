@@ -372,6 +372,7 @@ deleteResult = async (req, res) => {
     
     const resp = await Result.findOneAndDelete(query);
     if (!resp) return res.status(403).json({ message: "Unauthorized or not found" });
+    await logAudit(req, 'DELETE', 'Result', resp._id, { student: resp.student, subject: resp.subject });
     res.json(resp);
 };
 

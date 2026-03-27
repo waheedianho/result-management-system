@@ -164,6 +164,7 @@ createSchool = async (req, res) => {
       return res.status(403).send("Unauthorized");
     }
     const school = await School.create(req.body);
+    await logAudit(req, 'CREATE', 'School', school._id, { name: school.name });
     res.json(school);
   } catch (error) {
     res.status(500).json(error);
@@ -188,6 +189,9 @@ deleteSchool = async (req, res) => {
       return res.status(403).send("Unauthorized");
     }
     const school = await School.findByIdAndDelete(req.params.id);
+    if (school) {
+        await logAudit(req, 'DELETE', 'School', school._id, { name: school.name });
+    }
     res.json(school);
   } catch (error) {
     res.status(500).json(error);

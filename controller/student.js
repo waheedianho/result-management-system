@@ -3,25 +3,27 @@ const Students = require('../model/student');
 const ClassModel = require("../model/school-class");
 const {academic_term, academic_session} = require("../config");
 const Result = require("../model/result");
+const School = require("../model/school");
+const { calculateGrade } = require("../utils/grade");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
-function gradeFromScore(total) {
-    if (total >= 70) return 'A';
-    if (total >= 60) return 'B';
-    if (total >= 50) return 'C';
-    if (total >= 45) return 'D';
-    if (total >= 40) return 'E';
-    return 'F';
+function gradeFromScore(total, scale) {
+    const { grade } = calculateGrade(total, scale);
+    return grade;
 }
 
-function remarksFromGrade(grade) {
-    if (grade === 'A') return 'Excellent';
-    if (grade === 'B') return 'Very Good';
-    if (grade === 'C') return 'Good';
-    if (grade === 'D') return 'Pass';
-    if (grade === 'E') return 'Pass';
-    return 'Fail';
+function remarksFromGrade(grade, scale) {
+    if (!scale) {
+        if (grade === 'A') return 'Excellent';
+        if (grade === 'B') return 'Very Good';
+        if (grade === 'C') return 'Good';
+        if (grade === 'D') return 'Pass';
+        if (grade === 'E') return 'Pass';
+        return 'Fail';
+    }
+    const found = scale.find(s => s.grade === grade);
+    return found ? found.remark : 'Fail';
 }
 
 function toOrdinal(n) {
@@ -40,10 +42,15 @@ async function getAnnualResult(req, res, next) {
             return res.redirect(`/student/login?error=${JSON.stringify(error)}`);
         }
 
-        const student = await Students.findOne({ rollId }).populate('sclass');
+        const student = await Students.findOne({ rollId }).populate(['sclass', 'schoolId']);
         if (!student) {
             return res.redirect(`/student/login?error=${JSON.stringify({msg: 'Invalid Roll Id'})}`);
         }
+        
+        // Fetch School Config
+        const school = await School.findById(student.schoolId);
+        const gradingScale = school?.gradingScale || [];
+        const reportConfig = school?.reportCardConfig || {};
         if (student.sclass._id.toString() !== sclass) {
             return res.redirect(`/student/login?error=${JSON.stringify({msg: 'Invalid Class'})}`);
         }
@@ -68,9 +75,10 @@ async function getAnnualResult(req, res, next) {
             const vals = [terms.First, terms.Second, terms.Third].filter(v => v !== null);
             const sum = vals.reduce((a,b)=>a+b,0);
             const average = vals.length ? Number((sum/vals.length).toFixed(2)) : 0;
-            const grade = gradeFromScore(average);
+            const grade = gradeFromScore(average, gradingScale);
+            if (!gradeCounts[grade]) gradeCounts[grade] = 0;
             gradeCounts[grade]++;
-            const remarks = remarksFromGrade(grade);
+            const remarks = remarksFromGrade(grade, gradingScale);
 
             let highest = null, lowest = null, classAverage = null, rank = null;
 
@@ -121,8 +129,8 @@ async function getAnnualResult(req, res, next) {
         const totalMarksObtained = subjects.reduce((a,s)=>a + (s.firstTerm||0) + (s.secondTerm||0) + (s.thirdTerm||0), 0);
         const totalMarksObtainable = subjects.length * 300;
         const annualAverageScore = subjects.length ? Number((subjects.reduce((a,s)=>a+s.average,0)/subjects.length).toFixed(2)) : 0;
-        const annualAverageGrade = gradeFromScore(annualAverageScore);
-        const performanceRemarks = remarksFromGrade(annualAverageGrade);
+        const annualAverageGrade = gradeFromScore(annualAverageScore, gradingScale);
+        const performanceRemarks = remarksFromGrade(annualAverageGrade, gradingScale);
 
         const overallAgg = await Result.aggregate([
             { $match: { sclass: new ObjectId(String(sclass)), session: String(session) } },
@@ -144,11 +152,12 @@ async function getAnnualResult(req, res, next) {
         };
 
         const data = {
-            schoolName: "Al-Fawz Global Academy",
-            schoolAddress: "Olose Area, Off Mele-Koka Road, Moniya, Ibadan.",
-            schoolPhone: "0805 329 3540, 0803 544 6499",
-            schoolEmail: "alfawzglobalacademy@gmail.com",
-            schoolWebsite: "",
+            schoolName: reportConfig.schoolName || school.name || "Al-Fawz Global Academy",
+            schoolAddress: reportConfig.address || school.address || "Olose Area, Off Mele-Koka Road, Moniya, Ibadan.",
+            schoolPhone: reportConfig.phone || school.phone || "0805 329 3540, 0803 544 6499",
+            schoolEmail: reportConfig.email || school.email || "alfawzglobalacademy@gmail.com",
+            schoolWebsite: reportConfig.website || "",
+            reportConfig: reportConfig, // Pass full config for template logic
             student: {
                 name: student.fname,
                 class: student.sclass && student.sclass.cname ? student.sclass.cname : '',
@@ -218,6 +227,7 @@ getResult = async (req, res, next) => {
       const studentResult = {
           name: student.fname,
           rollId: student.rollId,
+          schoolName: reportConfig.schoolName || school.name,
           sclass: student.sclass.cname,
           session: academic_session,
           term: academic_term,
