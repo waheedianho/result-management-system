@@ -6,12 +6,10 @@ const classSchema = new Schema(
     {
         cname: {
             type: String,
-            unique: true,
             required: true,
         },
         cnameNum: {
             type: Number,
-            unique: true,
             required: true,
         },
         schoolId: {
@@ -24,6 +22,9 @@ const classSchema = new Schema(
         timestamps: true,
     }
 );
+
+classSchema.index({ cname: 1, schoolId: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
+classSchema.index({ cnameNum: 1, schoolId: 1 }, { unique: true });
 
 const ClassModel = mongoose.model("classes", classSchema);
 module.exports = ClassModel;

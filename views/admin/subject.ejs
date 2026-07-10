@@ -22,7 +22,7 @@
                                 <h6>Create Subject</h6>
                                 <%- include('partials/flash') %>
                                     <h4 id="err">Fill the corresponding value below</h4>
-                                    <form action="" method="POST">
+                                    <form id="subjectForm">
                                         <div class="form-row mb-4">
                                             <label for="sname" class="col-2">Subject Name: </label>
                                             <div class="col-10">
@@ -30,14 +30,8 @@
                                             </div>
                                         </div>
 
-                                        <div class="form-row mb-4">
-                                            <label for="scode" class="col-2">Subject Code</label>
-                                            <div class="col-10">
-                                                <input type="text" name="scode" id="scode" class="form-control">
-                                            </div>
-                                        </div>
 
-                                        <button type="button" class="btn btn-success btn-lg">Submit</button>
+                                        <button type="submit" class="btn btn-success btn-lg">Submit</button>
                                     </form>
                             </div>
                         </div>
@@ -50,26 +44,24 @@
 
         <script>
             $(document).ready(() => {
-                $('.btn').on('click', function() {
+                $('#subjectForm').on('submit', function(e) {
+                    e.preventDefault();
                     let sname = $('#sname').val().toString().toUpperCase(),
-                        scode = $('#scode').val().toString().toUpperCase(),
                         flash = $('.flash'),
                         message = $('#message')
 
-                    if ((scode.length && sname.length) === 0) {
+                    if (sname.length === 0) {
                         $('#err').css({
                             display: "block",
                         })
                     } else {
                         $.post('/admin/subject', {
-                            sname: sname,
-                            scode: scode,
+                            sname: sname
                         }, (data) => {
                              data.type != "danger" ?
                              flash.removeClass("alert-danger").addClass("alert-success").show(1000) && message.text(data.message) :
                             flash.removeClass("alert-sucess").addClass("alert-danger").show(1000) && message.text(data.message)
                             $('#sname').val("")
-                            $('#scode').val("")
                         })
                     }
 

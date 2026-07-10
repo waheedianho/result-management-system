@@ -9,11 +9,11 @@ const express = require('express'),
   student = require('../controller/student'),
   cookieSession = require('cookie-session');
 
-const {isAuth, verifyUser, getToken} = require("../authentication");
-const {subjectCombination, createSubjectCombination, manageSubjectsCombination, updateSubjectCombination,
-    deleteSubjectCombination, getSubjectsByClass
+const { isAuth, verifyUser, getToken } = require("../authentication");
+const { subjectCombination, createSubjectCombination, manageSubjectsCombination, updateSubjectCombination,
+  deleteSubjectCombination, getSubjectsByClass
 } = require("../controller/admin/subject-combination");
-const {getResults, generateClassResultsPage, getResultUploadTemplate, generateClassAnnualResultsPage} = require("../controller/admin/results");
+const { getResults, generateClassResultsPage, getResultUploadTemplate, generateClassAnnualResultsPage } = require("../controller/admin/results");
 
 const app = express();
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -32,7 +32,7 @@ process.on('uncaughtException', (err) => {
 
 // Helper to wrap async route handlers and forward errors to Express
 const asyncHandler = (fn) => (req, res, next) =>
-    Promise.resolve().then(() => fn(req, res, next)).catch(next);
+  Promise.resolve().then(() => fn(req, res, next)).catch(next);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -51,21 +51,20 @@ app.use(
 
 // mongoose.set('strictQuery', false)
 mongoose.connect(dbUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+  useNewUrlParser: true
 });
 
 const db = mongoose.connection;
 db.once('connected', () => {
-    console.log('conected successfully to database');
-    app.listen(port, () => console.log(`Example app listening on ${port} port!`));
+  console.log('conected successfully to database');
+  app.listen(port, () => console.log(`Example app listening on ${port} port!`));
 })
-    .on('error', err => {
-        console.log(err);
-    })
-    .once('disconnected', () => {
-        console.log('database disconnected');
-    });
+  .on('error', err => {
+    console.log(err);
+  })
+  .once('disconnected', () => {
+    console.log('database disconnected');
+  });
 
 //-------------------------------Route----------------------------
 //Home page
@@ -83,13 +82,13 @@ app.get('/student/annual-result', asyncHandler(student.getAnnualResult));
 //admin
 app.get('/admin/dashboard', isAuth, verifyUser, admin.doAfterLogin);
 app.post('/admin/dashboard',
-     passport.authenticate("local", { session: false, failureRedirect: "/"}),
-    (req, res, next) => {
-        // console.log(req.user)
-        const token = getToken({_id: req.user._id})
-        req.session = { token }
-        res.redirect("/admin/dashboard")
-});
+  passport.authenticate("local", { session: false, failureRedirect: "/" }),
+  (req, res, next) => {
+    // console.log(req.user)
+    const token = getToken({ _id: req.user._id })
+    req.session = { token }
+    res.redirect("/admin/dashboard")
+  });
 app.post('/crateadmin', admin.createAdmin);
 
 //admin logout
@@ -98,15 +97,15 @@ app.get('/logout', admin.logout);
 //subject
 app.get('/admin/subject', isAuth, verifyUser, admin.subject);
 app.post('/admin/subject', isAuth, verifyUser, admin.createSubject);
-app.get('/admin/manage-subject', isAuth, verifyUser, admin.manageSubjects );
+app.get('/admin/manage-subject', isAuth, verifyUser, admin.manageSubjects);
 app.put('/admin/manage-subject/:id', admin.updateSubject);
-app.delete( '/admin/manage-subject/:id', isAuth, verifyUser, admin.deleteSubject);
+app.delete('/admin/manage-subject/:id', isAuth, verifyUser, admin.deleteSubject);
 
 app.get('/admin/subject-combination', isAuth, verifyUser, asyncHandler(subjectCombination));
 app.post('/admin/subject-combination', isAuth, verifyUser, asyncHandler(createSubjectCombination));
 app.get('/admin/manage-subject-combination', isAuth, verifyUser, asyncHandler(manageSubjectsCombination));
 app.put('/admin/manage-subject-combination/:id', asyncHandler(updateSubjectCombination));
-app.delete( '/admin/manage-subject-combination/:id', isAuth, verifyUser, asyncHandler(deleteSubjectCombination));
+app.delete('/admin/manage-subject-combination/:id', isAuth, verifyUser, asyncHandler(deleteSubjectCombination));
 
 //class
 app.get('/admin/create-class', isAuth, verifyUser, admin.classCreate);
@@ -177,11 +176,12 @@ app.get('/admin/class-results', asyncHandler(generateClassAnnualResultsPage));
 // 404 handler - keep last before error handler
 app.use((req, res, next) => {
   res.status(404);
-  if (req.accepts('json')) {
-    return res.json({ error: 'Not Found' });
-  }
-  if (req.accepts('html')) {
+  const format = req.accepts('html', 'json');
+  if (format === 'html') {
     return res.render('errors/404', { url: req.url, originalUrl: req.originalUrl });
+  }
+  if (format === 'json') {
+    return res.json({ error: 'Not Found' });
   }
   return res.type('txt').send('Not Found');
 });
@@ -191,7 +191,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   try {
     console.error('Error handler caught:', err && (err.stack || err));
-  } catch (_) {}
+  } catch (_) { }
 
   if (res.headersSent) {
     return next(err);
@@ -199,12 +199,13 @@ app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
-  if (req.accepts('json')) {
-    return res.status(status).json({ error: message });
-  }
-  if (req.accepts('html')) {
+  const format = req.accepts('html', 'json');
+  if (format === 'html') {
     const stack = process.env.NODE_ENV === 'production' ? null : (err && err.stack) || null;
     return res.status(status).render('errors/error', { status, message, stack });
+  }
+  if (format === 'json') {
+    return res.status(status).json({ error: message });
   }
   return res.status(status).type('txt').send(message);
 });

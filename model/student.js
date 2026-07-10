@@ -7,12 +7,10 @@ const studentSchema = new Schema(
     {
         fname: {
             type: String,
-            unique: true,
             required: true,
         },
         rollId: {
             type: String,
-            unique: true,
             required: true,
         },
         email: {
@@ -57,6 +55,8 @@ const studentSchema = new Schema(
         }
     }
 );
+
+studentSchema.index({ rollId: 1, schoolId: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 
 const Students = mongoose.model("students", studentSchema);
 module.exports = Students;
