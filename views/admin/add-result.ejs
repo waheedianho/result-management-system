@@ -1,290 +1,286 @@
-<!DOCTYPE html>
-<html lang="en">
 <%- include('partials/head') %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
-    <body>
-        <div class="container-fluid">
-            <%- include('partials/header') %>
-                <section class="row">
-                    <%- include('partials/nav') %>
+  <body>
+    <div id="preloader">
+      <div class="preloader-spinner"></div>
+    </div>
+    <div class="container-fluid p-0">
+      <%- include('partials/header') %>
+        <section class="d-flex">
+          <%- include('partials/nav') %>
+            <div class="content rms-content flex-grow-1">
 
-                        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-                            <div class="w-100 p-2 bg-white mt-2 mb-2">
-                                <h3 class=" modal-header">Declare Result </h3>
-                                <div class="breadcrumb bg-transparent p-0">
-                                    <div class="breadcrumb-item">Home</div>
-                                    <div class="breadcrumb-item">Result</div>
-                                    <div class="breadcrumb-item">Add Result</div>
-                                </div>
-                            </div>
-                            <div class="card m-2 p-3">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <h5>For already typed Results</h5>
-                                   <div class="d-flex">
-                                       <select class="form-control mr-3 " id="select_class">
-                                           <option value="">Select Class Template</option>
-                                           <% classes.forEach(element => { %>
-                                               <option value="<%= element._id %>"><%= element.cname %></option>
-                                               <% }) %>
-                                       </select>
-                                       <button id="download_template" class="btn btn-success">Download Template</button>
-                                   </div>
-                                </div>
+              <!-- Page Header -->
+              <div class="rms-page-header">
+                <h3><i class="fa fa-file-text mr-2" style="color:var(--primary)"></i>Declare Result</h3>
+                <ol class="breadcrumb mb-0">
+                  <li class="breadcrumb-item">Home</li>
+                  <li class="breadcrumb-item">Results</li>
+                  <li class="breadcrumb-item active">Add Result</li>
+                </ol>
+              </div>
 
-                                <div class="alert alert-success alert-dismissible fade show" role="alert" id="feedback">
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                  </button>
-                                    <strong>FIle upload successfully</strong>
-                                </div>
-                                <form action="/admin/add-result" class="dropzone" id="upload-widget" enctype="multipart/form-data"></form>
-                            </div>
+              <!-- Session & Term Selection -->
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group mb-0">
+                        <label><i class="fa fa-calendar mr-1"></i> Academic Session</label>
+                        <select id="global_session" class="form-control">
+                          <% sessions.forEach(s=> { %>
+                            <option value="<%= s.name %>" <%=(typeof branding !=='undefined' &&
+                              branding.currentSession===s.name) ? 'selected' : '' %>><%= s.name %>
+                            </option>
+                            <% }) %>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group mb-0">
+                        <label><i class="fa fa-clock-o mr-1"></i> Term</label>
+                        <select id="global_term" class="form-control">
+                          <option value="First" <%=(typeof branding !=='undefined' && branding.currentTerm==='First' )
+                            ? 'selected' : '' %>>First Term</option>
+                          <option value="Second" <%=(typeof branding !=='undefined' && branding.currentTerm==='Second' )
+                            ? 'selected' : '' %>>Second Term</option>
+                          <option value="Third" <%=(typeof branding !=='undefined' && branding.currentTerm==='Third' )
+                            ? 'selected' : '' %>>Third Term</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                            <div class="card m-2 p-3">
+              <!-- Bulk Upload Card -->
+              <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fa fa-upload mr-2" style="color:var(--primary)"></i>
+                    <h5 class="m-0" style="font-size:14px;">Bulk Upload via Excel</h5>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <div class="pr-3">
+                      <select class="form-control mr-2" id="select_class" style="min-width:180px;">
+                        <option value="">Select Class Template</option>
+                        <% classes.forEach(element=> { %>
+                          <option value="<%= element._id %>">
+                            <%= element.cname %>
+                          </option>
+                          <% }) %>
+                      </select>
+                    </div>
+                    <button id="download_template" class="btn btn-primary">
+                      <i class="fa fa-download mr-1"></i> Download Template
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="alert alert-success alert-dismissible fade show" role="alert" id="feedback">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    <strong>File uploaded successfully</strong>
+                  </div>
+                  <form action="/admin/add-result" class="dropzone" id="upload-widget" enctype="multipart/form-data">
+                  </form>
+                </div>
+              </div>
 
-                                <h5>Declare a Result</h5>
-                                <%- include('partials/flash') %>
-                                    <h4 id="err">Fill the corresponding value below</h4>
+              <!-- Manual Entry Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="m-0" style="font-size:14px;"><i class="fa fa-pencil mr-2"
+                      style="color:var(--primary)"></i>Declare a Result Manually</h5>
+                </div>
+                <div class="card-body">
+                  <%- include('partials/flash') %>
+                    <h4 id="err" style="display:none;font-size:14px;color:#ef4444;margin-bottom:12px;">Please fill in
+                      all required fields.</h4>
 
-                                    <form action="" method="POST" class="" >
-<!--                                        <input name="dataType"  type="text" value="json" hidden=""/>-->
-                                        <div class="form-row m-3">
-                                            <label for="sclass" class="col-2">Class: </label>
-                                            <div class="col-10">
-
-
-                                                <select name="sclass" id="sclass" class="form-control">
-                                                    <option value="">Select class</option>
-                                                    <% classes.forEach(element => { %>
-                                                        <option value="<%= element._id %>" class="rmd"> <%= element.cname %> </option>
-                                                        <% }) %>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="sname" class="col-2">Student Name: </label>
-                                            <div class="col-10">
-                                                <select name="sname" id="sname" class="form-control">
-                                                    <option value="">Select Student</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="" id="result"></div>
-
-                                        <div class="form-row m-3 justify-content-end">
-                                            <button type="button" class="btn btn-success btn-lg" id="formSubmit">Add</button>
-                                        </div>
-                                    </form>
-                            </div>
+                    <form action="" method="POST">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="sclass">Class</label>
+                            <select name="sclass" id="sclass" class="form-control">
+                              <option value="">Select class</option>
+                              <% classes.forEach(element=> { %>
+                                <option value="<%= element._id %>" class="rmd">
+                                  <%= element.cname %>
+                                </option>
+                                <% }) %>
+                            </select>
+                          </div>
                         </div>
-                </section>
-        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="sname">Student Name</label>
+                            <select name="sname" id="sname" class="form-control">
+                              <option value="">Select Student</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
 
-        <script src="../../public/lib/jquery/jquery.min.js "></script>
-        <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
-        <script src="../../public/lib/dropzone-5.7.0/dist/dropzone.js"></script>
-        <script src="../../public/js/admin.js"></script>
-        <script src="/public/js/ajax.js"></script>
-        <script>
-            // console.log(students)
-            $(document).ready(() => {
+                      <div class="" id="result"></div>
 
-                // console.log("clicked")
-                $("select, input").on('focus', () => {
-                    if ($('#err').css('display') != "none" || $('.flash').css('display') != "none") {
-                        console.log('err display')
-                        $('#err').hide()
-                        $('.alert').hide()
-                    }
-                })
-                $('#formSubmit').on('click', function () {
+                      <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-primary btn-lg" id="formSubmit">
+                          <i class="fa fa-save mr-1"></i> Submit Result
+                        </button>
+                      </div>
+                    </form>
+                </div>
+              </div>
 
-                    console.log("clicked submit")
+            </div>
+        </section>
+    </div>
 
-                    const sclass = document.querySelector('#sclass').value;
-                    const student = document.querySelector('#sname').value;
-                    const flash = $('.flash')
+    <script src="/public/lib/jquery/jquery.min.js"></script>
+    <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/public/lib/dropzone-5.7.0/dist/dropzone.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script src="/public/js/ajax.js"></script>
+    <script>
+      $(document).ready(() => {
+        // Init Choices.js for single class selects
+        window.sclassChoices = new Choices('#sclass', {
+          searchEnabled: false,
+          itemSelectText: '',
+          shouldSort: false
+        });
 
-                    // collect all subject rows by their input id suffixes
-                    const caInputs = Array.from(document.querySelectorAll('input[id$="_ca"]'));
-                    const examInputs = Array.from(document.querySelectorAll('input[id$="_exam"]'));
+        new Choices('#select_class', {
+          searchEnabled: false,
+          itemSelectText: '',
+          shouldSort: false
+        });
 
-                    console.log(caInputs)
+        window.snameChoices = new Choices('#sname', {
+          searchEnabled: true,
+          itemSelectText: '',
+          shouldSort: false
+        });
 
+        $("select, input").on('focus', () => {
+          if ($('#err').css('display') != "none") $('#err').hide();
+          if ($('.flash').css('display') != "none") $('.alert').hide();
+        });
 
-                    // map by subject-combination id (prefix before _ca/_exam)
-                    const caById = new Map(
-                        caInputs.map(i => [i.id.replace(/_ca$/, ''), i.value.trim()])
-                    );
-                    const examById = new Map(
-                        examInputs.map(i => [i.id.replace(/_exam$/, ''), i.value.trim()])
-                    );
+        $('#formSubmit').on('click', function () {
+          const sclass = document.querySelector('#sclass').value;
+          const student = document.querySelector('#sname').value;
+          const flash = $('.flash');
 
+          const caInputs = Array.from(document.querySelectorAll('input[id$="_ca"]'));
+          const examInputs = Array.from(document.querySelectorAll('input[id$="_exam"]'));
 
-                    // build payload per subject
-                    const results = [];
-                    for (const subjectComboId of new Set([...caById.keys(), ...examById.keys()])) {
-                        console.log(subjectComboId)
-                        const ca = Number(caById.get(subjectComboId) || 0);
-                        const exam = Number(examById.get(subjectComboId) || 0);
+          const caById = new Map(caInputs.map(i => [i.id.replace(/_ca$/, ''), i.value.trim()]));
+          const examById = new Map(examInputs.map(i => [i.id.replace(/_exam$/, ''), i.value.trim()]));
 
-                        // let totalScore = ca + exam;
-                        // let grade = '';
-                        // if (totalScore < 39) grade = 'F';
-                        // else if (totalScore > 39 && totalScore <= 49) grade = 'D';
-                        // else if (totalScore > 49 && totalScore <= 59) grade = 'C';
-                        // else if (totalScore > 59 && totalScore <= 69) grade = 'B2';
-                        // else if (totalScore > 69 && totalScore <= 79) grade = 'B1';
-                        // else if (totalScore > 79 && totalScore <= 89) grade = 'A';
-                        // else if (totalScore > 89 && totalScore <= 100) grade = 'A+';
-                        // else grade = '-';
+          const globalSession = document.querySelector('#global_session').value;
+          const globalTerm = document.querySelector('#global_term').value;
 
-                        results.push({
-                            subject: subjectComboId,
-                            ca_score: ca,
-                            exam_score: exam,
-                            session: "2025/2026",
-                            term: "First",
-                            isRetake: false,
-                            // totalScore: ca + exam,
-                            student: student,
-                            sclass: sclass,
-                            // grade: grade
+          const results = [];
+          for (const subjectComboId of new Set([...caById.keys(), ...examById.keys()])) {
+            const caStr = caById.get(subjectComboId);
+            const examStr = examById.get(subjectComboId);
 
-                            // include more fields if present on the page
-                            // grade, session, term, isRetake, totalScore, student
-                        });
-                    }
+            if (caStr === '' || caStr === undefined || examStr === '' || examStr === undefined) {
+                $('#err').text("Please enter a valid score (or '0') for all CA and Exam fields, or click the trash icon to remove the subject if not needed.").show();
+                return;
+            }
 
-                    console.log("are you here")
-                    $.post('/admin/add-result', {
-                        // sclass: sclass,
-                        // sname: sname,
-                        // subject: subject,
-                        // score: score,
-                        type: "json",
-                        results: results,
+            const ca = Number(caStr);
+            const exam = Number(examStr);
 
-                    }, (data) => {
-                        const successMessage = `result uploaded successfully`
-                        data.status == 404 ? (
-                            flash.css({
-                                display: 'flex'
-                            }).removeClass('alert-sucess').addClass('alert-danger') &&
-                            $('#message').html(data.message)
-                        ) : (
-                            flash.css({
-                                display: 'flex'
-                            }) &&
-                            $('#message').html(successMessage)
-                        );
+            if (isNaN(ca) || isNaN(exam) || ca < 0 || exam < 0) {
+                $('#err').text("Scores must be valid non-negative numbers.").show();
+                return;
+            }
 
-                        console.log(data)
-                        $('#sclass').val("");
-                        $('#sname').val("");
-                        $('#subject').val("");
-                        $('#score').val("");
-                    })
+            results.push({
+              subject: subjectComboId,
+              ca_score: ca,
+              exam_score: exam,
+              session: globalSession,
+              term: globalTerm,
+              isRetake: false,
+              student: student,
+              sclass: sclass,
+            });
+          }
 
+          if (!sclass || !student) {
+              $('#err').text("Please select a class and a student.").show();
+              return;
+          }
 
-                    //
-                    // let sclass = $('#sclass').val()
-                    // sname = $('#sname').val(),
-                    //     subject = $('#subject').val(),
-                    //     score = $('#score').val(),
-                    //     flash = $('.flash')
-                    // console.log(typeof score)
-                    // if ((sclass.length &&
-                    //     sname.length &&
-                    //     subject.length &&
-                    //     score.length) === 0) {
-                    //     $('#err').css({
-                    //         display: "block",
-                    //     })
-                    // } else {
-                    //     $.post('/admin/add-result', {
-                    //         sclass: sclass,
-                    //         sname: sname,
-                    //         subject: subject,
-                    //         score: score,
-                    //
-                    //     }, (data) => {
-                    //         const successMessage = `<strong>${subject}<strong/> result for <strong>${sname}<strong/> uploaded successfully`
-                    //         data.status == 404 ? (
-                    //             flash.css({
-                    //                 display: 'flex'
-                    //             }).removeClass('alert-sucess').addClass('alert-danger') &&
-                    //             $('#message').html(data.message)
-                    //         ):(
-                    //             flash.css({
-                    //                     display: 'flex'
-                    //                 }) &&
-                    //                 $('#message').html(successMessage)
-                    //         );
-                    //
-                    //         console.log(data)
-                    //         $('#sclass').val("");
-                    //         $('#sname').val("");
-                    //         $('#subject').val("");
-                    //         $('#score').val("");
-                    //     })
-                    // }
-                })
+          if (results.length === 0) {
+              $('#err').text("No subjects found to declare results for.").show();
+              return;
+          }
 
-                $('#download_template').click(() => {
-                    // console.log("clicked")
-                    const classId = $('#select_class').val();
+          $.post('/admin/add-result', { type: "json", results }, (data) => {
+            const successMessage = `Result uploaded successfully`;
+            if (data.status == 404) {
+              flash.css({ display: 'flex' }).removeClass('alert-success').addClass('alert-danger');
+              $('#message').html(data.message);
+            } else {
+              flash.css({ display: 'flex' }).removeClass('alert-danger').addClass('alert-success p-3');
+              $('#message').html(successMessage);
 
-                    fetch(`/admin/results/template/${classId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error("Network response was not ok")
-                            }
-                            return response.blob(); // Return the blob from first then
-                        })
-                        .then(blob => {
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = 'results_template.xlsx'; // Changed filename to be more descriptive
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a); // Clean up by removing the element
-                        })
-                        .catch(error => {
-                            console.error('Error downloading template:', error);
-                            // Optionally show error to user
-                            alert('Failed to download template. Please try again.');
-                        });
-                });
-                //-----------------DropZone------------------------
-                Dropzone.options.uploadWidget = {
-                    maxFiles: 1,
-                    dictDefaultMessage: 'Upload ur xlsx file here',
-                    acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    init: function () {
-                        this.on("success", function (file, responseText) {
-                            // alert("Added file");
-                            this.removeFile(file)
-                            $('#feedback').removeAttr('id')
-                            console.log(responseText)
-                        });
-                    }
-                }
-                //--------------------------------------------------
+              // Clear the form
+              if (window.sclassChoices) window.sclassChoices.setChoiceByValue("");
+              if (window.snameChoices) window.snameChoices.setChoiceByValue("");
+              $('#result').empty(); // Clear generated subject inputs
+            }
+          });
+        });
 
-                // $(".custom-file-input").on("change", function() {
-                //     var fileName = $(this).val().split("\\").pop();
-                //     $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-                // });
-
+        $('#download_template').click(() => {
+          const classId = $('#select_class').val();
+          fetch(`/admin/results/template/${classId}`)
+            .then(response => {
+              if (!response.ok) throw new Error("Network response was not ok");
+              return response.blob();
             })
+            .then(blob => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              a.download = 'results_template.xlsx';
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+            })
+            .catch(error => {
+              console.error('Error downloading template:', error);
+              alert('Failed to download template. Please try again.');
+            });
+        });
 
-        </script>
-    </body>
+        Dropzone.options.uploadWidget = {
+          maxFiles: 1,
+          dictDefaultMessage: 'Drop your .xlsx file here or click to upload',
+          acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          init: function () {
+            this.on("success", function (file, responseText) {
+              this.removeFile(file);
+              $('#feedback').removeAttr('id');
+              console.log(responseText);
+            });
+          }
+        };
+      });
+    </script>
+  </body>
 
-</html>
+  </html>

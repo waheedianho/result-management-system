@@ -4,17 +4,11 @@ const Schema = mongoose.Schema;
 //Subject Schema
 const subjectSchema = new Schema(
     {
-        _id: {type: String},
         sname: {
             type: String,
-            unique: true,
             required: true,
         },
-        scode: {
-            type: String,
-            unique: true,
-            required: false,
-        },
+
         schoolId: {
             type: Schema.Types.ObjectId,
             ref: 'schools',
@@ -26,13 +20,7 @@ const subjectSchema = new Schema(
     }
 );
 
-subjectSchema.pre('save', function (next) {
-    if (this.isNew) {
-        this._id = this.sname;
-    }
-    next();
-});
-
+subjectSchema.index({ sname: 1, schoolId: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 
 const Subjects = mongoose.model("subjects", subjectSchema);
 

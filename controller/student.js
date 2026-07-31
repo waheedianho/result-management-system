@@ -48,14 +48,20 @@ async function getAnnualResult(req, res, next) {
             return res.redirect(`/student/login?error=${JSON.stringify({msg: 'Invalid Class'})}`);
         }
 
-        const studentResults = await Result.find({ student: student._id, sclass, session }).populate(['subject']);
+        const studentResults = await Result.find({ student: student._id, sclass, session }).populate({
+            path: 'subject',
+            populate: { path: 'subject' }
+        });
 
         const buckets = new Map();
         for (const r of studentResults) {
-            const subjectName = r.subject && r.subject.subject ? r.subject.subject : null;
-            if (!subjectName) continue;
-            if (!buckets.has(subjectName)) buckets.set(subjectName, { First: null, Second: null, Third: null });
-            const b = buckets.get(subjectName);
+            const subjObj = r.subject && r.subject.subject ? r.subject.subject : null;
+            if (!subjObj) continue;
+            const subjIdStr = String(subjObj._id || subjObj);
+            const subjNameStr = subjObj.sname || subjIdStr;
+            
+            if (!buckets.has(subjIdStr)) buckets.set(subjIdStr, { name: subjNameStr, First: null, Second: null, Third: null });
+            const b = buckets.get(subjIdStr);
             if (r.term === 'First') b.First = Number(r.totalScore) || 0;
             else if (r.term === 'Second') b.Second = Number(r.totalScore) || 0;
             else if (r.term === 'Third') b.Third = Number(r.totalScore) || 0;
@@ -64,7 +70,8 @@ async function getAnnualResult(req, res, next) {
         const subjects = [];
         const gradeCounts = { A:0, B:0, C:0, D:0, E:0, F:0 };
 
-        for (const [name, terms] of buckets.entries()) {
+        for (const [subjectId, terms] of buckets.entries()) {
+            const name = terms.name;
             const vals = [terms.First, terms.Second, terms.Third].filter(v => v !== null);
             const sum = vals.reduce((a,b)=>a+b,0);
             const average = vals.length ? Number((sum/vals.length).toFixed(2)) : 0;
@@ -74,7 +81,7 @@ async function getAnnualResult(req, res, next) {
 
             let highest = null, lowest = null, classAverage = null, rank = null;
 
-            const subjectRef = await mongoose.model('subject-combinations').findOne({ subject: name, class: sclass }).select('_id');
+            const subjectRef = await mongoose.model('subject-combinations').findOne({ subject: subjectId, class: sclass }).select('_id');
             if (subjectRef && subjectRef._id) {
                 const classSubjectResults = await Result.find({ sclass, session, subject: subjectRef._id }).select(['student','term','totalScore']);
                 const perStudent = new Map();
@@ -212,18 +219,27 @@ getResult = async (req, res, next) => {
           sclass,
           term: academic_term,
           session: academic_session
-      }).populate(['sclass', 'subject', 'student']);
+      }).populate([
+          'sclass', 
+          'student',
+          { path: 'subject', populate: { path: 'subject' } }
+      ]);
 
 
       const studentResult = {
           name: student.fname,
           rollId: student.rollId,
-          sclass: student.sclass.cname,
+          class: student.sclass.cname,
           session: academic_session,
           term: academic_term,
+          gender: student.gender || 'N/A',
+          admissionNo: student.rollId,
+          dob: student.dob ? new Date(student.dob).toISOString().slice(0,10) : '',
+          parent: 'N/A',
+          photoUrl: student.photoUrl ? String(student.photoUrl) : '/public/student-photo-portrait.jpg',
           date: new Date().toLocaleDateString(),
           results: results?.map(res => ({
-              subject: res.subject.subject,
+              subject: res.subject?.subject?.sname || res.subject?.sname || '',
               ca: res.ca_score,
               exam: res.exam_score,
               total: res.totalScore,
@@ -232,7 +248,29 @@ getResult = async (req, res, next) => {
 
       }
 
-      res.render('result_new', { student: studentResult  });
+      res.render('result_new', { 
+          schoolName: "Al-Fawz Global Academy",
+          schoolAddress: "Olose Area, Off Mele-Koka Road, Moniya, Ibadan.",
+          schoolPhone: "0805 329 3540, 0803 544 6499",
+          schoolEmail: "alfawzglobalacademy@gmail.com",
+          schoolWebsite: "",
+          student: studentResult,
+          subjects: [],
+          summary: {
+              totalMarksObtained: 0,
+              totalMarksObtainable: 0,
+              classPopulation: 0,
+              annualAverageScore: 0,
+              annualAverageGrade: '',
+              performanceRemarks: '',
+              classPosition: '',
+              promotionStatus: ''
+          },
+          gradeScale: ['A','B','C','D','E','F'],
+          gradeDistribution: [0, 0, 0, 0, 0, 0],
+          qrCodeUrl: `/public/qr-code.png`,
+          gradeScaleDescription: '>= 70: A (Excellent), 60-69: B (Very Good), 50-59: C (Good), 45-49: D (Pass), 40-44: E (Pass), < 40: F (Fail)'
+      });
 
   }
 };

@@ -14,6 +14,32 @@ const schoolSchema = new Schema(
       type: String,
       unique: true,
     },
+    // White-labelling / branding fields
+    logoUrl: {
+      type: String,
+      default: null,
+    },
+    primaryColor: {
+      type: String,
+      default: '#6366f1', // indigo
+    },
+    accentColor: {
+      type: String,
+      default: '#8b5cf6', // violet
+    },
+    tagline: {
+      type: String,
+      default: '',
+    },
+    currentSession: {
+      type: String,
+      default: '2025/2026',
+    },
+    currentTerm: {
+      type: String,
+      default: 'First',
+      enum: ['First', 'Second', 'Third']
+    },
   },
   { timestamps: true }
 );

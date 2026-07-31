@@ -1,15 +1,96 @@
-<header class="row p-2 bg-white justify-content-between align-items-center sticky-top">
-    <div class="d-flex align-items-center col-10 srmsadmin">
-        <img src="/public/images/logo.png" alt="logo" class="img-fluid" width="70" height="70">
+<%
+  // Derive initials for avatar fallback
+  const _brandName = branding.schoolName || 'E';
+  const _initials = _brandName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-        <div class="">
-            <ul class=" nav nav-pills">
-                <li class=" nav-item" id="menu"><h4><a class="nav-link" href="#"><i class="fa fa-bars"></i></a></h4></li>
-            </ul>
-        </div>
+  // Derive user initials
+  const _userName = (typeof user !== 'undefined' && user && user.name) ? user.name : 'User';
+  const _userInitials = _userName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  // Current page title from URL for breadcrumb display
+  const _pageUrl = (typeof url !== 'undefined') ? url : (typeof locals !== 'undefined' ? '' : '');
+%>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<header class="rms-header" id="rmsHeader">
+  <div class="rms-header-left">
+    <!-- Mobile hamburger -->
+    <button class="btn-hamburger" id="btnHamburger" aria-label="Toggle menu">
+      <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Page breadcrumb / title -->
+    <span class="rms-page-title d-none d-md-block">
+      <%= branding.schoolName %>
+    </span>
+  </div>
+
+  <div class="rms-header-right">
+    <!-- Dark/Light mode toggle -->
+    <button class="btn-theme-toggle" id="btnThemeToggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+      <i class="fa fa-moon-o" id="themeIcon"></i>
+    </button>
+
+    <!-- User badge -->
+    <div class="header-user">
+      <div class="header-user-avatar" title="<%= _userName %>"><%= _userInitials %></div>
+      <span class="header-user-name"><%= _userName %></span>
     </div>
 
-    <span class="text-right p-2 text-danger">
-        <h5> <a href=""></a> <i class="fa fa-sign-out" aria-hidden="true"></i> </h5>
-    </span>
+    <!-- Logout -->
+    <a href="/logout" class="btn-logout" id="btn-logout">
+      <i class="fa fa-sign-out"></i>
+      <span class="d-none d-sm-inline">Logout</span>
+    </a>
+  </div>
 </header>
+
+<script>
+  // ── Dark/Light mode toggle ──────────────────────────────────
+  (function() {
+    const STORAGE_KEY = 'rms-theme';
+    const btn = document.getElementById('btnThemeToggle');
+    const icon = document.getElementById('themeIcon');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem(STORAGE_KEY, theme);
+      if (icon) {
+        icon.className = theme === 'dark' ? 'fa fa-sun-o' : 'fa fa-moon-o';
+      }
+    }
+
+    // Apply saved or system preference on load
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+
+    if (btn) {
+      btn.addEventListener('click', function() {
+        const current = document.documentElement.getAttribute('data-theme');
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
+    }
+  })();
+
+  // ── Mobile sidebar toggle ───────────────────────────────────
+  (function() {
+    const hamburger = document.getElementById('btnHamburger');
+    const overlay = document.getElementById('sidebarOverlay');
+    const navPanel = document.querySelector('.navPanel');
+
+    function openSidebar() {
+      navPanel && navPanel.classList.add('open');
+      overlay && overlay.classList.add('active');
+    }
+    function closeSidebar() {
+      navPanel && navPanel.classList.remove('open');
+      overlay && overlay.classList.remove('active');
+    }
+
+    if (hamburger) hamburger.addEventListener('click', openSidebar);
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+  })();
+</script>

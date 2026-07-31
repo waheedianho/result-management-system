@@ -7,12 +7,10 @@ const studentSchema = new Schema(
     {
         fname: {
             type: String,
-            unique: true,
             required: true,
         },
         rollId: {
             type: String,
-            unique: true,
             required: true,
         },
         email: {
@@ -20,7 +18,6 @@ const studentSchema = new Schema(
         },
         gender: {
             type: String,
-            required: true,
         },
         sclass: {
             type: Schema.Types.ObjectId,
@@ -29,7 +26,6 @@ const studentSchema = new Schema(
         },
         dob: {
             type: Date,
-            required: true,
         },
         phone_no: {
             type: String,
@@ -45,6 +41,10 @@ const studentSchema = new Schema(
         photoUrl: {
             type: String,
         },
+        deleted: {
+            type: Boolean,
+            default: false,
+        },
         result: [{ type: Schema.Types.ObjectId, ref: "results" }],
     },
     {
@@ -57,6 +57,8 @@ const studentSchema = new Schema(
         }
     }
 );
+
+studentSchema.index({ rollId: 1, schoolId: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 
 const Students = mongoose.model("students", studentSchema);
 module.exports = Students;

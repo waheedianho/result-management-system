@@ -1,104 +1,174 @@
-<!DOCTYPE html>
-<html lang="en">
 <%- include('partials/head') %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 <body>
-<div class="container-fluid">
-    <%- include('partials/header') %>
-    <section class="row">
-        <%- include('partials/nav') %>
-        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-            <div class="w-100 p-2 bg-white mt-2 mb-2">
-                <h3 class="modal-header">Manage Subjects</h3>
-                <div class="breadcrumb bg-transparent p-0">
-                    <div class="breadcrumb-item">Home</div>
-                    <div class="breadcrumb-item">Subject</div>
-                    <div class="breadcrumb-item">Manage-Subjects-Combination</div>
-                </div>
+<div id="preloader"><div class="preloader-spinner"></div></div>
+<div class="container-fluid p-0">
+  <%- include('partials/header') %>
+  <section class="d-flex">
+    <%- include('partials/nav') %>
+    <div class="content rms-content flex-grow-1">
+
+      <!-- Page Header -->
+      <div class="rms-page-header">
+        <h3><i class="fa fa-object-group mr-2" style="color:var(--primary)"></i>Manage Subject Combinations</h3>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">Home</li>
+          <li class="breadcrumb-item">Subjects</li>
+          <li class="breadcrumb-item active">Subject Combinations</li>
+        </ol>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-toggle="modal" data-target="#createComboModal">
+          <i class="fa fa-plus mr-1"></i> Create Combination
+        </button>
+      </div>
+
+      <!-- Create Combination Modal -->
+      <div class="modal fade" id="createComboModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fa fa-plus-circle mr-2" style="color:var(--primary)"></i>Add Subject Combination</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-
-            <!-- Modal -->
-            <%- include('../modal/comfirmdelete') %>
-
-            <div class="d-flex flex-wrap justify-content-center">
-                <div class="w-100">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4 class="p-3">View Subject Combination Info</h4>
-                            </div>
-
-                            <div class="card-body" id="overflow">
-                                <table class="table table-bordered table-striped" id="subject_combo">
-                                    <thead>
-                                    <th>#</th>
-                                    <th>Class Name</th>
-                                    <th>Subject</th>
-                                    <th>Action</th>
-
-                                    </thead>
-                                    <tbody>
-                                    <% if (docs.length != 0) { %> <% docs.forEach(doc => { %>
-                                        <tr>
-                                            <td><%= docs.indexOf(doc) + 1 %></td>
-                                            <td>
-                                                <%= doc?.class?.cname %>
-                                            </td>
-                                            <td>
-                                                <%= doc.subject %>
-
-                                            </td>
-
-                                            <td class="text-center actionBtn">
-                                                <i
-                                                        class="btn btn-danger fa fa-trash-o btn-delete"
-                                                        data-target="#delete"
-                                                        data-toggle="modal"
-                                                        id="<%= doc._id %>"
-                                                ></i>
-                                            </td>
-                                        </tr>
-                                    <% }) %> <% } else{%>
-                                        <p>You have not register any Subject</p>
-                                    <% } %>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+            <form id="createComboForm" class="mb-0">
+              <div class="modal-body">
+                <div class="alert alert-danger" id="createComboError" style="display:none; font-size:13px; padding:8px 12px;">Please select a class and at least one subject.</div>
+                
+                <div class="form-group">
+                  <label for="sclass_cb">Class Name</label>
+                  <select name="class" id="sclass_cb" class="form-control" required>
+                    <option value="">Select class</option>
+                    <% classes.forEach(element => { %>
+                      <option value="<%= element._id %>"><%= element.cname %></option>
+                    <% }) %>
+                  </select>
                 </div>
-            </div>
+
+                <div class="form-group mb-0">
+                  <label for="subjects">Subjects</label>
+                  <select multiple name="subjects" id="subjects" class="form-control" required>
+                    <option value="">Select subjects</option>
+                    <% subjects.forEach(element => { %>
+                      <option value="<%= element._id %>"><%= element.sname %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i>Save Combination</button>
+              </div>
+            </form>
+          </div>
         </div>
-    </section>
+      </div>
+
+      <!-- Delete Modal -->
+      <%- include('../modal/comfirmdelete') %>
+
+      <!-- Combinations Table -->
+      <div class="card">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="fa fa-object-group mr-2" style="color:var(--primary)"></i>
+          <h4 class="m-0" style="font-size:15px;">Subject Combination Records</h4>
+        </div>
+        <div class="card-body" id="overflow">
+          <table class="table table-striped" id="subject_combo">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Class Name</th>
+                <th>Subject</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (docs.length != 0) { %> <% docs.forEach(doc => { %>
+              <tr>
+                <td><%= docs.indexOf(doc) + 1 %></td>
+                <td><%= doc?.class?.cname %></td>
+                <td><%= doc?.subject?.sname || 'Unknown' %></td>
+                <td class="text-center actionBtn">
+                  <i class="btn btn-danger btn-sm fa fa-trash-o btn-delete"
+                     data-target="#delete" data-toggle="modal"
+                     id="<%= doc._id %>"></i>
+                </td>
+              </tr>
+              <% }) %> <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
 </div>
 
-<script src="../../public/lib/jquery/jquery.min.js "></script>
-<script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
+<script src="/public/lib/jquery/jquery.min.js"></script>
+<script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
 <script src="/public/js/edit.js"></script>
 <script src="/public/js/ajaxDelete.js"></script>
-<script src="../../public/js/admin.js"></script>
-
-<!-- datatable -->
-<script src="../../public/lib/dt/datatables/jquery.dataTables.js"></script>
-<script src="../../public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-
+<script src="/public/js/admin.js"></script>
+<script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+<script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
 <script>
-    const url = "<%= url %>";
+  const url = window.location.pathname;
+  $(function () {
+    $('#subject_combo').DataTable({
+      paging: true,
+      searching: true,
+      ordering: false,
+      info: false,
+      responsive: true,
+    });
 
-    $(function () {
-        // $('subject_combo').DataTable({
-        //     responsive: true
-        // })
+    // Init Choices.js for multiple subjects
+    let choicesInstance = new Choices('#subjects', {
+      removeItemButton: true,
+      searchEnabled: true
+    });
 
-        $('#subject_combo').DataTable({
-            paging: true,
-            searching: true,
-            ordering: false,
-            info: false,
-            responsive: true,
+    // Init Choices.js for single class select
+    let classChoicesInstance = new Choices('#sclass_cb', {
+      searchEnabled: false,
+      itemSelectText: '',
+      shouldSort: false
+    });
 
-        })
-    })
+    // Create Combination Form Submit
+    $('#createComboForm').on('submit', function(e) {
+      e.preventDefault();
+      const classId = $('#sclass_cb').val();
+      const selectedSubjects = choicesInstance.getValue(true);
+      
+      if (!classId || !selectedSubjects || selectedSubjects.length === 0) {
+        $('#createComboError').show();
+        return;
+      }
+      $('#createComboError').hide();
+
+      $.post('/admin/subject-combination', { class: classId, subjects: selectedSubjects }, function(data) {
+        if (data.type === 'danger') {
+          $('#createComboError').text(data.message).show();
+        } else {
+          location.reload();
+        }
+      }).fail(function(err) {
+        $('#createComboError').text('An error occurred. Please try again.').show();
+      });
+    });
+
+    $('#createComboModal select, #createComboModal input').on('focus change', function() {
+      $('#createComboError').hide();
+    });
+  });
 </script>
 </body>
 </html>

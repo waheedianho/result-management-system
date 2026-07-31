@@ -75,7 +75,10 @@ logout = (req, res) => {
 createAdmin = (req, res, next) => {
   const { email, pswrd, role, schoolId, ...rest } = req.body;
   const staffData = { username: email, email, role, ...rest };
-  if (schoolId && schoolId !== '') {
+  
+  if (req.user && req.user.role !== 'super-admin') {
+    staffData.schoolId = req.user.schoolId;
+  } else if (schoolId && schoolId !== '') {
     staffData.schoolId = schoolId;
   }
 
@@ -114,13 +117,19 @@ updateStaff = async (req, res) => {
     if (req.user.role !== 'super-admin') {
       query.schoolId = req.user.schoolId;
     }
+    
+    const updateData = { ...req.body };
+    if (updateData.assignedClass === '') updateData.assignedClass = null;
+    if (updateData.schoolId === '') updateData.schoolId = null;
+
     const updatedStaff = await Staff.findOneAndUpdate(
       query,
-      { $set: req.body },
+      { $set: updateData },
       { new: true }
     );
     res.json(updatedStaff);
   } catch (error) {
+    console.error('Error updating staff:', error);
     res.status(500).json(error);
   }
 };
@@ -194,6 +203,38 @@ deleteSchool = async (req, res) => {
   }
 };
 
+schoolSettings = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).send("Unauthorized");
+    }
+    const school = await School.findById(req.user.schoolId);
+    const AcademicSession = require('../../model/academic-session');
+    const sessions = await AcademicSession.find().sort({ createdAt: -1 });
+    res.render("admin/school-settings", { user: req.user, school, sessions, currentPath: '/admin/school-settings' });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+updateSchoolSettings = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).send("Unauthorized");
+    }
+    const { currentSession, currentTerm } = req.body;
+    await School.findByIdAndUpdate(req.user.schoolId, { currentSession, currentTerm });
+    
+    // Invalidate the branding cache so the new session is immediately reflected
+    const { invalidateBrandingCache } = require('../../src/branding');
+    invalidateBrandingCache(req.user.schoolId);
+    
+    res.json({ message: "Updated successfully" });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
 module.exports = {
   doAfterLogin,
   logout,
@@ -206,6 +247,8 @@ module.exports = {
   createSchool,
   updateSchool,
   deleteSchool,
+  schoolSettings,
+  updateSchoolSettings,
   subject: subject.subject,
   createSubject: subject.createSubject,
   deleteSubject: subject.deleteSubject,

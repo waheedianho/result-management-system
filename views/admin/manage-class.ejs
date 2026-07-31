@@ -1,91 +1,145 @@
-<!DOCTYPE html>
-<html lang="en">
-  <%- include('partials/head') %>
+<%- include('partials/head') %>
 
-  <body>
-    <div class="container-fluid">
-      <%- include('partials/header') %>
-      <section class="row">
-        <%- include('partials/nav') %>
-        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-          <div class="w-100 p-2 bg-white mt-2 mb-2">
-            <h3 class="modal-header">Manage Classes</h3>
-            <div class="breadcrumb bg-transparent p-0">
-              <div class="breadcrumb-item">Home</div>
-              <div class="breadcrumb-item">Subject</div>
-              <div class="breadcrumb-item">manage-classes</div>
+<body>
+<div id="preloader"><div class="preloader-spinner"></div></div>
+<div class="container-fluid p-0">
+  <%- include('partials/header') %>
+  <section class="d-flex">
+    <%- include('partials/nav') %>
+    <div class="content rms-content flex-grow-1">
+
+      <!-- Page Header -->
+      <div class="rms-page-header">
+        <h3><i class="fa fa-th-list mr-2" style="color:var(--primary)"></i>Manage Classes</h3>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">Home</li>
+          <li class="breadcrumb-item">Classes</li>
+          <li class="breadcrumb-item active">Manage Classes</li>
+        </ol>
+      </div>
+      <!-- Toolbar -->
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-toggle="modal" data-target="#createClassModal">
+          <i class="fa fa-plus mr-1"></i> Create New Class
+        </button>
+      </div>
+
+      <!-- Create Class Modal -->
+      <div class="modal fade" id="createClassModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fa fa-plus-circle mr-2" style="color:var(--primary)"></i>Create Class</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-          </div>
-
-          <!-- Modal -->
-          <%- include('../modal/comfirmdelete') %>
-
-          <div class="d-flex flex-wrap justify-content-center">
-            <div class="w-100">
-              <div class="col-12">
-                <div class="card">
-                  <div class="card-header">
-                    <h4 class="p-3">View Classes Info</h4>
-                  </div>
-
-                  <div class="card-body" id="overflow">
-                    <table class="table table-bordered table-striped">
-                      <thead>
-                        <th>#</th>
-                        <th>Class Name</th>
-                        <th>Class Name Numeric</th>
-
-                        <th>Craetion Date</th>
-                        <th>Modifield Dated</th>
-                        <th>Action</th>
-                      </thead>
-                      <tbody>
-                        <% if (docs.length != 0) { %> <% docs.forEach(doc => {
-                        %>
-                        <tr id="<%= docs.indexOf(doc) %>">
-                          <td><%= docs.indexOf(doc) + 1 %></td>
-                          <td><%= doc.cname %></td>
-                          <td><%= doc.cnameNum %></td>
-
-                          <td><%= doc.createdAt.toLocaleString() %></td>
-                          <td><%= doc.updatedAt.toLocaleString() %></td>
-                          <td class="text-center">
-                            <i
-                              class="btn btn-danger fa fa-trash-o btn-delete w-75 p-2"
-                              data-target="#delete"
-                              data-toggle="modal"
-                              id="<%= doc._id %>"
-                            ></i>
-                          </td>
-                        </tr>
-                        <% }) %> <% } else{%>
-                        <p>You have not register any Class</p>
-                        <% } %>
-                      </tbody>
-                    </table>
-                  </div>
+            <form id="createClassForm" class="mb-0">
+              <div class="modal-body">
+                <div class="alert alert-danger" id="createClassError" style="display:none; font-size:13px; padding:8px 12px;">Please fill in all fields below.</div>
+                <div class="form-group">
+                  <label>Class Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="cname" required placeholder="e.g. Grade 1, Grade 2, Grade 3">
+                </div>
+                <div class="form-group">
+                  <label>Class Numeric <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" max="9" min="0" id="cnameNum" required placeholder="e.g. 1, 2, 3">
+                  <small class="text-muted">Numeric value used for sorting (e.g. 1, 2, 3)</small>
                 </div>
               </div>
-            </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i>Save Class</button>
+              </div>
+            </form>
           </div>
         </div>
-      </section>
+      </div>
+
+      <!-- Delete Modal -->
+      <%- include('../modal/comfirmdelete') %>
+
+      <!-- Classes Table -->
+      <div class="card">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="fa fa-th-list mr-2" style="color:var(--primary)"></i>
+          <h4 class="m-0" style="font-size:15px;">Registered Classes</h4>
+        </div>
+        <div class="card-body" id="overflow">
+          <table class="table table-striped" id="class_table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Class Name</th>
+                <th>Class Numeric</th>
+                <th>Creation Date</th>
+                <th>Modified Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (docs.length != 0) { %> <% docs.forEach(doc => { %>
+              <tr>
+                <td><%= docs.indexOf(doc) + 1 %></td>
+                <td><strong><%= doc.cname %></strong></td>
+                <td><%= doc.cnameNum %></td>
+                <td><%= doc.createdAt.toLocaleString() %></td>
+                <td><%= doc.updatedAt.toLocaleString() %></td>
+                <td>
+                  <i class="btn btn-danger btn-sm fa fa-trash-o btn-delete"
+                     data-target="#delete"
+                     data-toggle="modal"
+                     id="<%= doc._id %>"></i>
+                </td>
+              </tr>
+              <% }) %> <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
+  </section>
+</div>
 
-    <script src="/public/lib/jquery//jquery.min.js "></script>
-    <script src="/public/lib/bootstrap/js/bootstrap.min.js "></script>
-    <script src="/public//js/ajaxDelete.js"></script>
-    <script src="/public/js/admin.js"></script>
+<script src="/public/lib/jquery//jquery.min.js"></script>
+<script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="/public/js/ajaxDelete.js"></script>
+<script src="/public/js/admin.js"></script>
+<script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+<script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+<script>
+  const url = window.location.pathname;
+  $(function () {
+    $('#class_table').DataTable({ responsive: true });
 
-    <!-- datatable -->
-    <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
-    <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-    <script>
-      const url = "<%= url %>";
+    // Create Class Form Submit
+    $('#createClassForm').on('submit', function(e) {
+      e.preventDefault();
+      const cname = $('#cname').val().toString().toUpperCase();
+      const cnameNum = $('#cnameNum').val();
+      
+      if (!cname || !cnameNum) {
+        $('#createClassError').show();
+        return;
+      }
+      $('#createClassError').hide();
 
-      $(function () {
-        $("table").DataTable();
+      $.post('/admin/create-class', { cname, cnameNum }, function(data) {
+        if (data.type === 'danger') {
+          $('#createClassError').text(data.message).show();
+        } else {
+          location.reload();
+        }
+      }).fail(function(err) {
+        $('#createClassError').text('An error occurred. Please try again.').show();
       });
-    </script>
-  </body>
+    });
+
+    $('#createClassModal input').on('focus', function() {
+      $('#createClassError').hide();
+    });
+  });
+</script>
+</body>
 </html>

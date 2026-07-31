@@ -1,187 +1,454 @@
 <%- include('partials/head') %>
 
-<body>
-  <div class="container-fluid">
-    <%- include('partials/header') %>
-    <section class="row">
-      <%- include('partials/nav') %>
-      <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-        <div class="w-100 p-2 bg-white mt-2 mb-2">
-          <h3 class="modal-header">Manage Schools</h3>
-          <div class="breadcrumb bg-transparent p-0">
-            <div class="breadcrumb-item">Home</div>
-            <div class="breadcrumb-item">Schools</div>
-            <div class="breadcrumb-item">Manage-Schools</div>
-          </div>
-        </div>
+  <body>
+    <div id="preloader">
+      <div class="preloader-spinner"></div>
+    </div>
+    <div class="container-fluid p-0">
+      <%- include('partials/header') %>
+        <section class="d-flex">
+          <%- include('partials/nav') %>
+            <div class="content rms-content flex-grow-1">
 
-        <div class="container-fluid">
-          <div class="row mb-3">
-            <div class="col-12 text-right">
-              <button class="btn btn-primary" data-toggle="modal" data-target="#createSchoolModal">
-                <i class="fa fa-plus"></i> Create New School
-              </button>
-            </div>
-          </div>
-
-          <!-- Modal for Create School -->
-          <div class="modal fade" id="createSchoolModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Create New School</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <form id="createSchoolForm">
-                  <div class="modal-body">
-                    <div class="form-group">
-                      <label>School Name</label>
-                      <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                      <label>Address</label>
-                      <input type="text" name="address" class="form-control">
-                    </div>
-                    <div class="form-group">
-                      <label>Phone</label>
-                      <input type="text" name="phone" class="form-control">
-                    </div>
-                    <div class="form-group">
-                      <label>Email</label>
-                      <input type="email" name="email" class="form-control">
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save School</button>
-                  </div>
-                </form>
+              <!-- Page Header -->
+              <div class="rms-page-header">
+                <h3><i class="fa fa-university mr-2" style="color:var(--primary)"></i>Manage Schools</h3>
+                <ol class="breadcrumb mb-0">
+                  <li class="breadcrumb-item">Home</li>
+                  <li class="breadcrumb-item">Schools</li>
+                  <li class="breadcrumb-item active">Manage Schools</li>
+                </ol>
               </div>
-            </div>
-          </div>
 
-          <!-- Modal for Delete Confirmation -->
-          <%- include('../modal/comfirmdelete') %>
+              <!-- Toolbar -->
+              <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#createSchoolModal">
+                  <i class="fa fa-plus mr-1"></i> Create New School
+                </button>
+              </div>
 
-          <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h4 class="m-0">Registered Schools</h4>
-                </div>
-
-                <div class="card-body" id="overflow">
-                  <table class="table table-bordered table-striped" id="school_table">
-                    <thead>
-                      <th>#</th>
-                      <th>Name</th>
-                      <th>Address</th>
-                      <th>Phone</th>
-                      <th>Email</th>
-                      <th>Action</th>
-                    </thead>
-                    <tbody id="school_tbody">
-                      <% if (schools.length != 0) { %> <% schools.forEach(school => { %>
-                      <tr>
-                        <td><%= schools.indexOf(school) + 1 %></td>
-                        <td>
-                          <input type="text" name="name" value="<%= school.name %>" class="form-control bg-transparent border-0 unclick" disabled />
-                        </td>
-                        <td>
-                          <input type="text" name="address" value="<%= school.address %>" class="form-control bg-transparent border-0 unclick" disabled />
-                        </td>
-                        <td>
-                          <input type="text" name="phone" value="<%= school.phone %>" class="form-control bg-transparent border-0 unclick" disabled />
-                        </td>
-                        <td>
-                          <input type="email" name="email" value="<%= school.email %>" class="form-control bg-transparent border-0 unclick" disabled />
-                        </td>
-                        <td class="text-center actionBtn">
-                          <i class="btn btn-info fa fa-edit edit" id="<%= school._id %>"></i>
-                          <i class="btn btn-danger fa fa-trash-o btn-delete" data-target="#delete" data-toggle="modal" id="<%= school._id %>"></i>
-                        </td>
-                      </tr>
-                      <% }) %> <% } else{%>
-                      <tr><td colspan="6" class="text-center text-muted">No schools found</td></tr>
-                      <% } %>
-                    </tbody>
-                  </table>
+              <!-- ── Create School Modal ── -->
+              <div class="modal fade" id="createSchoolModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="fa fa-plus mr-2" style="color:var(--primary)"></i>Create New
+                        School</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <form id="createSchoolForm" class="mb-0">
+                      <div class="modal-body">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <h6 class="mb-3"
+                              style="color:var(--text-secondary); font-size:11px; text-transform:uppercase; letter-spacing:.1em;">
+                              School Info</h6>
+                            <div class="form-group">
+                              <label>School Name <span class="text-danger">*</span></label>
+                              <input type="text" name="name" class="form-control" required
+                                placeholder="e.g. Greenfield Academy">
+                            </div>
+                            <div class="form-group">
+                              <label>Address</label>
+                              <input type="text" name="address" class="form-control" placeholder="Street, City, State">
+                            </div>
+                            <div class="form-group">
+                              <label>Phone</label>
+                              <input type="text" name="phone" class="form-control" placeholder="+234 800 000 0000">
+                            </div>
+                            <div class="form-group">
+                              <label>Email</label>
+                              <input type="email" name="email" class="form-control" placeholder="info@school.edu">
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <h6 class="mb-3"
+                              style="color:var(--text-secondary); font-size:11px; text-transform:uppercase; letter-spacing:.1em;">
+                              Branding</h6>
+                            <div class="form-group">
+                              <label>Tagline</label>
+                              <input type="text" name="tagline" class="form-control"
+                                placeholder="e.g. Excellence in Education">
+                            </div>
+                            <div class="form-group">
+                              <label>Primary Color</label>
+                              <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="primaryColor" id="createPrimaryColor" value="#6366f1"
+                                  style="width:48px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);">
+                                <input type="text" name="primaryColorHex" id="createPrimaryHex" class="form-control"
+                                  value="#6366f1" placeholder="#6366f1" style="flex:1">
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label>Accent Color</label>
+                              <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="accentColor" id="createAccentColor" value="#8b5cf6"
+                                  style="width:48px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);">
+                                <input type="text" name="accentColorHex" id="createAccentHex" class="form-control"
+                                  value="#8b5cf6" placeholder="#8b5cf6" style="flex:1">
+                              </div>
+                            </div>
+                            <!-- Color preview -->
+                            <div id="createColorPreview"
+                              style="height:36px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);transition:background .3s;margin-top:4px;">
+                            </div>
+                            <p style="color:var(--text-muted);font-size:11px;margin-top:4px;">Logo can be uploaded after
+                              creating the school.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i>Save
+                          School</button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </div>
+
+              <!-- ── Edit School Modal ── -->
+              <div class="modal fade" id="editSchoolModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="fa fa-edit mr-2" style="color:var(--primary)"></i>Edit School
+                      </h5>
+                      <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <form id="editSchoolForm" class="mb-0">
+                      <input type="hidden" id="editSchoolId">
+                      <div class="modal-body">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <h6 class="mb-3"
+                              style="color:var(--text-secondary); font-size:11px; text-transform:uppercase; letter-spacing:.1em;">
+                              School Info</h6>
+                            <div class="form-group">
+                              <label>School Name <span class="text-danger">*</span></label>
+                              <input type="text" name="name" id="editName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                              <label>Address</label>
+                              <input type="text" name="address" id="editAddress" class="form-control">
+                            </div>
+                            <div class="form-group">
+                              <label>Phone</label>
+                              <input type="text" name="phone" id="editPhone" class="form-control">
+                            </div>
+                            <div class="form-group">
+                              <label>Email</label>
+                              <input type="email" name="email" id="editEmail" class="form-control">
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <h6 class="mb-3"
+                              style="color:var(--text-secondary); font-size:11px; text-transform:uppercase; letter-spacing:.1em;">
+                              Branding</h6>
+                            <div class="form-group">
+                              <label>Tagline</label>
+                              <input type="text" name="tagline" id="editTagline" class="form-control">
+                            </div>
+                            <div class="form-group">
+                              <label>Primary Color</label>
+                              <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="primaryColor" id="editPrimaryColor" value="#6366f1"
+                                  style="width:48px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);">
+                                <input type="text" name="primaryColorHex" id="editPrimaryHex" class="form-control"
+                                  value="#6366f1" style="flex:1">
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label>Accent Color</label>
+                              <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="accentColor" id="editAccentColor" value="#8b5cf6"
+                                  style="width:48px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);">
+                                <input type="text" name="accentColorHex" id="editAccentHex" class="form-control"
+                                  value="#8b5cf6" style="flex:1">
+                              </div>
+                            </div>
+                            <div id="editColorPreview"
+                              style="height:36px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);transition:background .3s;margin-top:4px;">
+                            </div>
+
+                            <!-- Logo Upload -->
+                            <div class="form-group mt-3">
+                              <label>School Logo</label>
+                              <div class="d-flex align-items-center gap-2">
+                                <img id="editLogoPreview" src="" alt="Logo"
+                                  style="width:48px;height:48px;object-fit:contain;border-radius:8px;border:1px solid var(--border);display:none;background:var(--surface-alt);">
+                                <div style="flex:1">
+                                  <input type="file" id="editLogoFile" accept="image/*" class="form-control-file">
+                                  <small style="color:var(--text-muted);font-size:11px;">JPG, PNG, SVG, WebP — max
+                                    2MB</small>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i>Update
+                          School</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delete Confirmation Modal -->
+              <%- include('../modal/comfirmdelete') %>
+
+                <!-- Schools Table -->
+                <div class="card">
+                  <div class="card-header d-flex align-items-center gap-2">
+                    <i class="fa fa-university mr-2" style="color:var(--primary)"></i>
+                    <h4 class="m-0" style="font-size:15px;">Registered Schools</h4>
+                  </div>
+                  <div class="card-body" id="overflow">
+                    <table class="table table-striped rounded" id="school_table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Logo</th>
+                          <th>Name</th>
+                          <th>Address</th>
+                          <th>Phone</th>
+                          <th>Email</th>
+                          <th>Colors</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="school_tbody">
+                        <% if (schools.length !==0) { %>
+                          <% schools.forEach((school, idx)=> { %>
+                            <tr>
+                              <td>
+                                <%= idx + 1 %>
+                              </td>
+                              <td>
+                                <% if (school.logoUrl) { %>
+                                  <img src="<%= school.logoUrl %>" alt="<%= school.name %>"
+                                    style="width:36px;height:36px;object-fit:contain;border-radius:6px;border:1px solid var(--border);"
+                                    onerror="this.src=''">
+                                  <% } else { %>
+                                    <div
+                                      style="width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,<%= school.primaryColor||'#6366f1' %>,<%= school.accentColor||'#8b5cf6' %>);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">
+                                      <%= school.name.charAt(0).toUpperCase() %>
+                                    </div>
+                                    <% } %>
+                              </td>
+                              <td><strong>
+                                  <%= school.name %>
+                                </strong></td>
+                              <td>
+                                <%= school.address || '—' %>
+                              </td>
+                              <td>
+                                <%= school.phone || '—' %>
+                              </td>
+                              <td>
+                                <%= school.email || '—' %>
+                              </td>
+                              <td>
+                                <div class="d-flex gap-1">
+                                  <div title="Primary: <%= school.primaryColor || '#6366f1' %>"
+                                    style="width:20px;height:20px;border-radius:4px;background:<%= school.primaryColor || '#6366f1' %>;border:1px solid rgba(0,0,0,0.1);">
+                                  </div>
+                                  <div title="Accent: <%= school.accentColor || '#8b5cf6' %>"
+                                    style="width:20px;height:20px;border-radius:4px;background:<%= school.accentColor || '#8b5cf6' %>;border:1px solid rgba(0,0,0,0.1);">
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <button class="btn btn-info btn-sm btn-edit-school" data-id="<%= school._id %>"
+                                  data-name="<%= school.name %>" data-address="<%= school.address || '' %>"
+                                  data-phone="<%= school.phone || '' %>" data-email="<%= school.email || '' %>"
+                                  data-tagline="<%= school.tagline || '' %>"
+                                  data-primary="<%= school.primaryColor || '#6366f1' %>"
+                                  data-accent="<%= school.accentColor || '#8b5cf6' %>"
+                                  data-logo="<%= school.logoUrl || '' %>">
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-delete" data-target="#delete"
+                                  data-toggle="modal" id="<%= school._id %>">
+                                  <i class="fa fa-trash-o"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <% }) %>
+                              <% } else { %>
+                                <tr>
+                                  <td colspan="8" class="text-center text-muted py-4">No schools registered yet.</td>
+                                </tr>
+                                <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+        </section>
+    </div>
 
-  <script src="/public/lib/jquery//jquery.min.js "></script>
-  <script src="/public/lib/bootstrap/js/bootstrap.min.js "></script>
-  <script src="/public/js/admin.js"></script>
+    <script src="/public/lib/jquery//jquery.min.js"></script>
+    <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+    <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
 
-  <!-- datatable -->
-  <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
-  <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-  
-  <script>
-    $(function () {
-      const table = $('#school_table').DataTable({
-        responsive: true,
+    <script>
+      // Preloader
+      window.addEventListener('load', function () {
+        const pre = document.getElementById('preloader');
+        if (pre) { pre.style.opacity = '0'; setTimeout(() => pre.remove(), 300); }
       });
 
-      // Create School
-      $('#createSchoolForm').submit(function(e) {
-        e.preventDefault();
-        const data = $(this).serialize();
-        $.post('/admin/schools', data, function(res) {
-          location.reload();
-        }).fail(function(err) {
-          alert('Error creating school: ' + (err.responseJSON?.message || 'Unknown error'));
-        });
-      });
+      $(function () {
+        $('#school_table').DataTable({ responsive: true });
 
-      // Edit School Toggle
-      $(document).on('click', '.edit', function() {
-        const row = $(this).closest('tr');
-        const inputs = row.find('input');
-        if ($(this).hasClass('fa-edit')) {
-          inputs.prop('disabled', false).removeClass('border-0 unclick').addClass('bg-white');
-          $(this).removeClass('fa-edit btn-info').addClass('fa-save btn-success');
-        } else {
-          const id = $(this).attr('id');
-          const data = {};
-          inputs.each(function() {
-            data[$(this).attr('name')] = $(this).val();
+        // ── Color picker sync ──────────────────────────────────────
+        function syncColor(colorInput, hexInput, previewId, which) {
+          const preview = document.getElementById(previewId);
+          colorInput.addEventListener('input', function () {
+            hexInput.value = this.value;
+            updatePreview(previewId, which === 'primary' ? this.value : document.getElementById(which === 'primary' ? colorInput.id : (previewId === 'createColorPreview' ? 'createAccentColor' : 'editAccentColor')).value,
+              which === 'accent' ? this.value : document.getElementById(which === 'primary' ? colorInput.id : (previewId === 'createColorPreview' ? 'createPrimaryColor' : 'editPrimaryColor')).value);
           });
-          $.ajax({
-            url: '/admin/schools/' + id,
-            method: 'PUT',
-            data: data,
-            success: function() {
-              inputs.prop('disabled', true).addClass('border-0 unclick').removeClass('bg-white');
-              $('.edit[id="'+id+'"]').removeClass('fa-save btn-success').addClass('fa-edit btn-info');
-            }
+          hexInput.addEventListener('input', function () {
+            if (/^#[0-9a-f]{6}$/i.test(this.value)) colorInput.value = this.value;
           });
         }
-      });
+        function updatePreview(previewId, primary, accent) {
+          const el = document.getElementById(previewId);
+          if (el) el.style.background = `linear-gradient(135deg,${primary},${accent})`;
+        }
+        // Create form
+        const cPrimary = document.getElementById('createPrimaryColor');
+        const cAccent = document.getElementById('createAccentColor');
+        const cPrimaryHex = document.getElementById('createPrimaryHex');
+        const cAccentHex = document.getElementById('createAccentHex');
+        if (cPrimary) {
+          cPrimary.addEventListener('input', function () { cPrimaryHex.value = this.value; updatePreview('createColorPreview', this.value, cAccent.value); });
+          cAccent.addEventListener('input', function () { cAccentHex.value = this.value; updatePreview('createColorPreview', cPrimary.value, this.value); });
+          cPrimaryHex.addEventListener('input', function () { if (/^#[0-9a-f]{6}$/i.test(this.value)) { cPrimary.value = this.value; updatePreview('createColorPreview', this.value, cAccent.value); } });
+          cAccentHex.addEventListener('input', function () { if (/^#[0-9a-f]{6}$/i.test(this.value)) { cAccent.value = this.value; updatePreview('createColorPreview', cPrimary.value, this.value); } });
+        }
+        // Edit form
+        const ePrimary = document.getElementById('editPrimaryColor');
+        const eAccent = document.getElementById('editAccentColor');
+        const ePrimaryHex = document.getElementById('editPrimaryHex');
+        const eAccentHex = document.getElementById('editAccentHex');
+        if (ePrimary) {
+          ePrimary.addEventListener('input', function () { ePrimaryHex.value = this.value; updatePreview('editColorPreview', this.value, eAccent.value); });
+          eAccent.addEventListener('input', function () { eAccentHex.value = this.value; updatePreview('editColorPreview', ePrimary.value, this.value); });
+          ePrimaryHex.addEventListener('input', function () { if (/^#[0-9a-f]{6}$/i.test(this.value)) { ePrimary.value = this.value; updatePreview('editColorPreview', this.value, eAccent.value); } });
+          eAccentHex.addEventListener('input', function () { if (/^#[0-9a-f]{6}$/i.test(this.value)) { eAccent.value = this.value; updatePreview('editColorPreview', ePrimary.value, this.value); } });
+        }
 
-      // Delete School
-      let deleteId = '';
-      $(document).on('click', '.btn-delete', function() {
-        deleteId = $(this).attr('id');
-      });
+        // ── Create School ──────────────────────────────────────────
+        $('#createSchoolForm').submit(function (e) {
+          e.preventDefault();
+          const data = {
+            name: $('[name=name]', this).val(),
+            address: $('[name=address]', this).val(),
+            phone: $('[name=phone]', this).val(),
+            email: $('[name=email]', this).val(),
+            tagline: $('[name=tagline]', this).val(),
+            primaryColor: $('#createPrimaryColor').val(),
+            accentColor: $('#createAccentColor').val(),
+          };
+          $.post('/admin/schools', data, function () {
+            Toastify({ text: "School created successfully!", duration: 1500, style: { background: "green" } }).showToast();
+            setTimeout(() => location.reload(), 1500);
+          }).fail(function (err) {
+            Toastify({ text: "Error creating school: " + (err.responseJSON?.message || 'Unknown error'), duration: 3000, style: { background: "red" } }).showToast();
+          });
+        });
 
-      $('#comfirm_delete').click(function() {
-        $.ajax({
-          url: '/admin/schools/' + deleteId,
-          method: 'DELETE',
-          success: function() {
-            location.reload();
-          }
+        // ── Open Edit Modal ────────────────────────────────────────
+        $(document).on('click', '.btn-edit-school', function () {
+          const d = $(this).data();
+          $('#editSchoolId').val(d.id);
+          $('#editName').val(d.name);
+          $('#editAddress').val(d.address);
+          $('#editPhone').val(d.phone);
+          $('#editEmail').val(d.email);
+          $('#editTagline').val(d.tagline);
+          $('#editPrimaryColor').val(d.primary); $('#editPrimaryHex').val(d.primary);
+          $('#editAccentColor').val(d.accent); $('#editAccentHex').val(d.accent);
+          updatePreview('editColorPreview', d.primary, d.accent);
+          const logoPreview = document.getElementById('editLogoPreview');
+          if (d.logo) { logoPreview.src = d.logo; logoPreview.style.display = 'block'; }
+          else { logoPreview.style.display = 'none'; }
+          $('#editSchoolModal').modal('show');
+        });
+
+        // ── Edit School Save ───────────────────────────────────────
+        $('#editSchoolForm').submit(function (e) {
+          e.preventDefault();
+          const id = $('#editSchoolId').val();
+          const data = {
+            name: $('#editName').val(),
+            address: $('#editAddress').val(),
+            phone: $('#editPhone').val(),
+            email: $('#editEmail').val(),
+            tagline: $('#editTagline').val(),
+            primaryColor: $('#editPrimaryColor').val(),
+            accentColor: $('#editAccentColor').val(),
+          };
+          $.ajax({
+            url: '/admin/schools/' + id, method: 'PUT', data, success: function () {
+              const file = document.getElementById('editLogoFile').files[0];
+              if (file) {
+                const fd = new FormData(); fd.append('logo', file);
+                $.ajax({
+                  url: '/admin/schools/' + id + '/logo', method: 'PUT', data: fd,
+                  processData: false, contentType: false,
+                  success: function () { 
+                    Toastify({ text: "School updated successfully!", duration: 1500, style: { background: "green" } }).showToast();
+                    setTimeout(() => location.reload(), 1500);
+                  },
+                  error: function (err) { 
+                    Toastify({ text: "School updated but logo upload failed: " + (err.responseJSON?.message || err.statusText), duration: 3000, style: { background: "orange" } }).showToast();
+                    setTimeout(() => location.reload(), 3000);
+                  }
+                });
+              } else {
+                Toastify({ text: "School updated successfully!", duration: 1500, style: { background: "green" } }).showToast();
+                setTimeout(() => location.reload(), 1500);
+              }
+            }, error: function (err) {
+              Toastify({ text: "Error updating school: " + (err.responseJSON?.message || 'Unknown error'), duration: 3000, style: { background: "red" } }).showToast();
+            }
+          });
+        });
+
+        // ── Delete ─────────────────────────────────────────────────
+        let deleteId;
+        $(document).on('click', '.btn-delete', function (e) {
+          e.preventDefault();
+          deleteId = $(this).attr('id');
+        });
+
+        $('#comfirmDelete').click(function () {
+          if (!deleteId) return;
+          $.ajax({ 
+            url: '/admin/schools/' + deleteId, 
+            method: 'DELETE', 
+            success: function () { 
+              $('#delete').modal('hide');
+              Toastify({ text: "School has been deleted.", duration: 1500, style: { background: "green" } }).showToast();
+              setTimeout(() => location.reload(), 1500);
+            },
+            error: function (err) {
+              Toastify({ text: "Failed to delete school.", duration: 3000, style: { background: "red" } }).showToast();
+            }
+          });
         });
       });
-    });
-  </script>
-</body>
+    </script>
+  </body>

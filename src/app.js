@@ -9,11 +9,17 @@ const express = require('express'),
   student = require('../controller/student'),
   cookieSession = require('cookie-session');
 
-const {isAuth, verifyUser, getToken} = require("../authentication");
-const {subjectCombination, createSubjectCombination, manageSubjectsCombination, updateSubjectCombination,
-    deleteSubjectCombination, getSubjectsByClass
+const { isAuth, verifyUser, getToken } = require("../authentication");
+const { subjectCombination, createSubjectCombination, manageSubjectsCombination, updateSubjectCombination,
+  deleteSubjectCombination, getSubjectsByClass
 } = require("../controller/admin/subject-combination");
-const {getResults, generateClassResultsPage, getResultUploadTemplate, generateClassAnnualResultsPage} = require("../controller/admin/results");
+const { getResults, generateClassResultsPage, getResultUploadTemplate, generateClassAnnualResultsPage } = require("../controller/admin/results");
+const { generateClassAnnualResultsPage: generateClassAnnualResults } = require('../controller/admin/class');
+const sessionController = require('../controller/admin/academic-session');
+const { brandingMiddleware, invalidateBrandingCache } = require('./branding');
+const { logoUpload } = require('./logo-upload');
+const School = require('../model/school');
+
 
 const app = express();
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -32,7 +38,7 @@ process.on('uncaughtException', (err) => {
 
 // Helper to wrap async route handlers and forward errors to Express
 const asyncHandler = (fn) => (req, res, next) =>
-    Promise.resolve().then(() => fn(req, res, next)).catch(next);
+  Promise.resolve().then(() => fn(req, res, next)).catch(next);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -51,21 +57,20 @@ app.use(
 
 // mongoose.set('strictQuery', false)
 mongoose.connect(dbUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+  useNewUrlParser: true
 });
 
 const db = mongoose.connection;
 db.once('connected', () => {
-    console.log('conected successfully to database');
-    app.listen(port, () => console.log(`Example app listening on ${port} port!`));
+  console.log('conected successfully to database');
+  app.listen(port, () => console.log(`Example app listening on ${port} port!`));
 })
-    .on('error', err => {
-        console.log(err);
-    })
-    .once('disconnected', () => {
-        console.log('database disconnected');
-    });
+  .on('error', err => {
+    console.log(err);
+  })
+  .once('disconnected', () => {
+    console.log('database disconnected');
+  });
 
 //-------------------------------Route----------------------------
 //Home page
@@ -73,6 +78,10 @@ app.get('/', controller.home);
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Branding middleware — must come after passport so req.user is available
+app.use(brandingMiddleware);
+
 
 // Student Login
 app.get('/student/login', student.login);
@@ -83,14 +92,14 @@ app.get('/student/annual-result', asyncHandler(student.getAnnualResult));
 //admin
 app.get('/admin/dashboard', isAuth, verifyUser, admin.doAfterLogin);
 app.post('/admin/dashboard',
-     passport.authenticate("local", { session: false, failureRedirect: "/"}),
-    (req, res, next) => {
-        // console.log(req.user)
-        const token = getToken({_id: req.user._id})
-        req.session = { token }
-        res.redirect("/admin/dashboard")
-});
-app.post('/crateadmin', admin.createAdmin);
+  passport.authenticate("local", { session: false, failureRedirect: "/?error=1" }),
+  (req, res, next) => {
+    // console.log(req.user)
+    const token = getToken({ _id: req.user._id })
+    req.session = { token }
+    res.redirect("/admin/dashboard")
+  });
+app.post('/crateadmin', isAuth, verifyUser, admin.createAdmin);
 
 //admin logout
 app.get('/logout', admin.logout);
@@ -98,15 +107,15 @@ app.get('/logout', admin.logout);
 //subject
 app.get('/admin/subject', isAuth, verifyUser, admin.subject);
 app.post('/admin/subject', isAuth, verifyUser, admin.createSubject);
-app.get('/admin/manage-subject', isAuth, verifyUser, admin.manageSubjects );
-app.put('/admin/manage-subject/:id', admin.updateSubject);
-app.delete( '/admin/manage-subject/:id', isAuth, verifyUser, admin.deleteSubject);
+app.get('/admin/manage-subject', isAuth, verifyUser, admin.manageSubjects);
+app.put('/admin/manage-subject/:id', isAuth, verifyUser, admin.updateSubject);
+app.delete('/admin/manage-subject/:id', isAuth, verifyUser, admin.deleteSubject);
 
 app.get('/admin/subject-combination', isAuth, verifyUser, asyncHandler(subjectCombination));
 app.post('/admin/subject-combination', isAuth, verifyUser, asyncHandler(createSubjectCombination));
 app.get('/admin/manage-subject-combination', isAuth, verifyUser, asyncHandler(manageSubjectsCombination));
-app.put('/admin/manage-subject-combination/:id', asyncHandler(updateSubjectCombination));
-app.delete( '/admin/manage-subject-combination/:id', isAuth, verifyUser, asyncHandler(deleteSubjectCombination));
+app.put('/admin/manage-subject-combination/:id', isAuth, verifyUser, asyncHandler(updateSubjectCombination));
+app.delete('/admin/manage-subject-combination/:id', isAuth, verifyUser, asyncHandler(deleteSubjectCombination));
 
 //class
 app.get('/admin/create-class', isAuth, verifyUser, admin.classCreate);
@@ -131,18 +140,42 @@ app.delete(
   isAuth, verifyUser,
   admin.deleteStudent
 );
-app.put('/admin/manage-student/:id', admin.updateStudent);
+app.put('/admin/manage-student/:id', isAuth, verifyUser, admin.updateStudent);
 
 //staff
 app.get('/admin/manage-staff', isAuth, verifyUser, admin.manageStaff);
 app.put('/admin/manage-staff/:id', isAuth, verifyUser, admin.updateStaff);
 app.delete('/admin/manage-staff/:id', isAuth, verifyUser, admin.deleteStaff);
 
+// school settings (admin only)
+app.get('/admin/school-settings', isAuth, verifyUser, admin.schoolSettings);
+app.put('/admin/school-settings', isAuth, verifyUser, admin.updateSchoolSettings);
+
 //school (super-admin only)
 app.get('/admin/manage-schools', isAuth, verifyUser, admin.manageSchools);
 app.post('/admin/schools', isAuth, verifyUser, admin.createSchool);
 app.put('/admin/schools/:id', isAuth, verifyUser, admin.updateSchool);
 app.delete('/admin/schools/:id', isAuth, verifyUser, admin.deleteSchool);
+
+//academic sessions (super-admin only)
+app.get('/admin/manage-sessions', isAuth, verifyUser, sessionController.manageSessions);
+app.post('/admin/sessions', isAuth, verifyUser, sessionController.createSession);
+app.delete('/admin/sessions/:id', isAuth, verifyUser, sessionController.deleteSession);
+
+// School logo upload
+app.put('/admin/schools/:id/logo', isAuth, verifyUser, logoUpload.single('logo'), async (req, res) => {
+  try {
+    if (req.user.role !== 'super-admin') return res.status(403).json({ message: 'Unauthorized' });
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const logoUrl = `/public/uploads/logos/${req.file.filename}`;
+    await School.findByIdAndUpdate(req.params.id, { logoUrl });
+    invalidateBrandingCache(req.params.id);
+    res.json({ logoUrl });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 app.delete(
   '/admin/manage-classes/:id',
@@ -156,19 +189,19 @@ app.get('/test', asyncHandler(student.renderingSampleTemplate));
 //Result
 app.get('/admin/add-result', isAuth, verifyUser, admin.result);
 app.post('/admin/add-result', isAuth, verifyUser, admin.addResult);
-app.get('/admin/manage-result', admin.manageResult);
-app.delete('/admin/manage-result/:id', admin.deleteResult);
-app.put('/admin/manage-result/:id', admin.updateReSult);
+app.get('/admin/manage-result', isAuth, verifyUser, admin.manageResult);
+app.delete('/admin/manage-result/:id', isAuth, verifyUser, admin.deleteResult);
+app.put('/admin/manage-result/:id', isAuth, verifyUser, admin.updateReSult);
 
 //ApI
-app.get('/classes', admin.getClass);
-app.get('/students', admin.getStudent);
-app.get('/students/:sclass', admin.getStudent);
-app.get('/admin/subject-combination/:id', asyncHandler(getSubjectsByClass));
-app.get('/admin/results', asyncHandler(getResults));
-app.get('/admin/results/template/:classId', asyncHandler(getResultUploadTemplate));
-app.get('/admin/students/template/:classId', asyncHandler(admin.getStudentUploadTemplate));
-app.get('/admin/class-results', asyncHandler(generateClassAnnualResultsPage));
+app.get('/classes', isAuth, verifyUser, admin.getClass);
+app.get('/students', isAuth, verifyUser, admin.getStudent);
+app.get('/students/:sclass', isAuth, verifyUser, admin.getStudent);
+app.get('/admin/subject-combination/:id', isAuth, verifyUser, asyncHandler(getSubjectsByClass));
+app.get('/admin/results', isAuth, verifyUser, asyncHandler(getResults));
+app.get('/admin/results/template/:classId', isAuth, verifyUser, asyncHandler(getResultUploadTemplate));
+app.get('/admin/students/template/:classId', isAuth, verifyUser, asyncHandler(admin.getStudentUploadTemplate));
+app.get('/admin/class-results', isAuth, verifyUser, asyncHandler(generateClassAnnualResultsPage));
 // app.get('/admin/class-annual-results', asyncHandler(generateClassAnnualResultsPage));
 
 
@@ -177,11 +210,12 @@ app.get('/admin/class-results', asyncHandler(generateClassAnnualResultsPage));
 // 404 handler - keep last before error handler
 app.use((req, res, next) => {
   res.status(404);
-  if (req.accepts('json')) {
-    return res.json({ error: 'Not Found' });
-  }
-  if (req.accepts('html')) {
+  const format = req.accepts('html', 'json');
+  if (format === 'html') {
     return res.render('errors/404', { url: req.url, originalUrl: req.originalUrl });
+  }
+  if (format === 'json') {
+    return res.json({ error: 'Not Found' });
   }
   return res.type('txt').send('Not Found');
 });
@@ -191,7 +225,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   try {
     console.error('Error handler caught:', err && (err.stack || err));
-  } catch (_) {}
+  } catch (_) { }
 
   if (res.headersSent) {
     return next(err);
@@ -199,12 +233,13 @@ app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
-  if (req.accepts('json')) {
-    return res.status(status).json({ error: message });
-  }
-  if (req.accepts('html')) {
+  const format = req.accepts('html', 'json');
+  if (format === 'html') {
     const stack = process.env.NODE_ENV === 'production' ? null : (err && err.stack) || null;
     return res.status(status).render('errors/error', { status, message, stack });
+  }
+  if (format === 'json') {
+    return res.status(status).json({ error: message });
   }
   return res.status(status).type('txt').send(message);
 });

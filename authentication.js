@@ -74,7 +74,12 @@ exports.jwtPassport =passport.use(new JwtStrategy(opts, async (jwt_payload, done
 exports.comfirmUser = (req, res, next) => {
     req.user ? next() : res.redirect("/");
 }
-exports.verifyUser = passport.authenticate("jwt", { session: false, failureRedirect: "/" });
+exports.verifyUser = (req, res, next) => {
+    passport.authenticate("jwt", { session: false, failureRedirect: "/" })(req, res, () => {
+        res.locals.user = req.user;
+        next();
+    });
+};
 
 // module.exports = passport;
 

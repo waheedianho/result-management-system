@@ -1,19 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <%- include('partials/head') %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 <body>
-  <div class="container-fluid">
-    <%- include('partials/header') %>
-    <section class="row">
-      <%- include('partials/nav') %>
-      <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-        <div class="w-100 p-2 bg-white mt-2 mb-2">
-          <h3 class="modal-header">Manage Staff</h3>
-          <div class="breadcrumb bg-transparent p-0">
-            <div class="breadcrumb-item">Home</div>
-            <div class="breadcrumb-item">Staff</div>
-            <div class="breadcrumb-item">Manage-Staff</div>
-          </div>
-        </div>
+<div id="preloader"><div class="preloader-spinner"></div></div>
+<div class="container-fluid p-0">
+  <%- include('partials/header') %>
+  <section class="d-flex">
+    <%- include('partials/nav') %>
+    <div class="content rms-content flex-grow-1">
+
+      <div class="rms-page-header">
+        <h3><i class="fa fa-user-secret mr-2" style="color:var(--primary)"></i>Manage Staff</h3>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">Home</li>
+          <li class="breadcrumb-item">Staff</li>
+          <li class="breadcrumb-item active">Manage Staff</li>
+        </ol>
+      </div>
+
 
         <!-- Modal -->
         <%- include('../modal/comfirmdelete') %>
@@ -175,25 +182,32 @@
           </div>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
+</div>
 
-  <script src="/public/lib/jquery//jquery.min.js "></script>
-  <script src="/public/lib/bootstrap/js/bootstrap.min.js "></script>
+
+<script src="/public/lib/jquery//jquery.min.js"></script>
+  <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
   <script src="/public/js/ajaxDelete.js"></script>
   <script src="/public/js/edit.js"></script>
   <script src="/public/js/admin.js"></script>
-
-  <!-- datatable -->
   <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
   <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
   <script>
-    const url = '<%= url %>';
+    window.addEventListener('load',function(){const pre=document.getElementById('preloader');if(pre){pre.style.opacity='0';setTimeout(()=>pre.remove(),300);}});
+    const url = window.location.pathname;
     $(function () {
-      $('table').DataTable({
-        responsive: true,
-      });
-
+      const roleSelect = document.querySelector('select[name="role"]');
+      if (roleSelect) {
+        new Choices(roleSelect, { searchEnabled: false, itemSelectText: '', shouldSort: false });
+      }
+      
+      const schoolSelect = document.querySelector('select[name="schoolId"]');
+      if (schoolSelect) {
+        new Choices(schoolSelect, { searchEnabled: false, itemSelectText: '', shouldSort: false });
+      }
+      $('table').DataTable({ responsive: true });
       $('#addStaffForm').submit(function(e) {
         e.preventDefault();
         const data = $(this).serialize();
@@ -206,3 +220,4 @@
     });
   </script>
 </body>
+

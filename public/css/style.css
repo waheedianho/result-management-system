@@ -1,11 +1,9 @@
-#loginPanel {
-    height: 90vh;
-}
+/* style.css — Public/student-facing pages (login, result checker) */
+/* Main styles handled by theme.css */
 
-.container-fluid {
-    background-color: aliceblue;
-}
-
-input {
-    border: 0;
+/* Ensure body fills screen */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }

@@ -15,7 +15,7 @@ subjectCombination = async (req, res) => {
 }
 
 getSubjectsByClass = async (req, res) => {
-    const subjectComb = await SubjectCombination.find({ class: req.params.id, schoolId: req.user.schoolId }).populate('class');
+    const subjectComb = await SubjectCombination.find({ class: req.params.id, schoolId: req.user.schoolId }).populate('class').populate('subject');
     console.log(subjectComb)
     return res.json(subjectComb);
 }
@@ -45,9 +45,13 @@ createSubjectCombination = async (req, res, next) => {
 };
 
 manageSubjectsCombination = async (req, res) => {
-    const subjectCombo = await SubjectCombination.find({ schoolId: req.user.schoolId }).populate('class')
+    const subjectCombo = await SubjectCombination.find({ schoolId: req.user.schoolId }).populate('class').populate('subject');
+    const subjects = await Subject.find({ schoolId: req.user.schoolId });
+    const classes = await Classes.find({ schoolId: req.user.schoolId });
     res.render('admin/manage-subject-combination', {
         docs: subjectCombo,
+        subjects,
+        classes,
         url: req.url,
     });
 };

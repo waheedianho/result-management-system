@@ -1,0 +1,5 @@
+allowBuilds:
+  bcrypt: true
+  bson: true
+  kerberos: true
+  phantomjs-prebuilt: true

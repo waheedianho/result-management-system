@@ -1,96 +1,189 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <%- include('partials/head') %>
 
-    <body>
-        <div class="container-fluid">
+  <body>
+    <div id="preloader">
+      <div class="preloader-spinner"></div>
+    </div>
 
-            <%- include('partials/header') %>
-                <div class="row alert bg-success offset-8  col-4 position-absolute p-2 text-white"id="welcome"style="z-index: 5; right: 20px; bottom: 10px;">
-                    <div class="col-2">
-                        <i class="fa fa-check"></i>
-                    </div>
+    <div class="container-fluid p-0">
+      <%- include('partials/header') %>
 
-                    <div class="col-8 p-0">
-                        <p class="">HI <strong> <%= user.name %> </strong> Welcome to AMQOR Result Management System</p>
-                    </div>
+        <section class="d-flex">
+          <%- include('partials/nav') %>
 
-                    <div class="col-2"data-target="#welcome"data-dismiss="alert">
-                        <i class="fa fa-times"></i>
-                    </div>
-                </div>
-                <section class="row">
-                    <%- include('partials/nav') %>
-                        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-                            <div class="w-100 p-2 bg-white mt-2 mb-4 ">
-                                <h3 class="">Dashboard</h3>
-                            </div>
+            <div class="content rms-content flex-grow-1">
 
-                            <div class="main container-fluid ">
-                                <div class="row text-white ">
-                                    <% if (user.role === 'super-admin') { %>
-                                    <div class="col-lg-3 col-md-6 mb-3 summary">
-                                        <div class="d-flex bg-warning pt-4 ">
-                                            <span class="col-4 p-0 ">
-                                                <i class="fa fa-university fa-4x "></i>
-                                            </span>
-                                            <div class="col-8 text-right ">
-                                                <h6><%= schools.length %> <br> Total Schools</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <% } %>
-                                    <div class="col-lg-3 col-md-6 mb-3 summary">
-                                        <div class="d-flex bg-primary pt-4 ">
-                                            <span class="col-4 p-0 ">
-                                                <i class="fa fa-users fa-4x "></i>
-                                            </span>
-                                            <div class="col-8 text-right ">
-                                                <h6><%= StaffReg.length %> <br> <%= user.role === 'super-admin' ? 'Total' : 'Reg.' %> Teacher</h6>
-                                            </div>
+              <!-- Page Header -->
+              <div class="rms-page-header">
+                <h3><i class="fa fa-home mr-2" style="color:var(--primary)"></i>Dashboard</h3>
+                <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item active">Home</li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                  </ol>
+                </nav>
+              </div>
 
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6 mb-3 summary">
-                                        <div class="d-flex bg-danger pt-4 ">
-                                            <span class="col-4 p-0 ">
-                                        <i class="fa fa-file-text fa-4x "></i>
-                                    </span>
-                                            <div class="col-8 text-right ">
-                                                <h6> <%= SubjectsReg.length %> <br> Subject Register</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6 mb-3 summary">
-                                        <div class="d-flex bg-info pt-4 ">
-                                            <span class="col-4 p-0 ">
-                                    <i class="fa fa-home fa-4x "></i>
-                                </span>
-                                            <div class="col-8 text-right ">
-                                                <h6><%= StudentsReg.length %> <br> Reg. Student</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6 mb-3 summary">
-                                        <div class="d-flex bg-success pt-4 ">
-                                            <span class="col-4 p-0 ">
-                                    <i class="fa fa-print fa-4x "></i>
-                                </span>
-                                            <div class="col-8 text-right ">
-                                                <h6> <%= uploadResult.length %> <br> Result Declared</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+              <!-- Welcome section -->
+              <div class="mb-4" style="animation: fadeUp 0.4s ease">
+                <h4 style="color:var(--text-primary); font-size:17px;">
+                  Good day, <strong>
+                    <%= user.name %>
+                  </strong> 👋
+                </h4>
+                <p style="color:var(--text-secondary); font-size:13.5px; margin:0;">
+                  Here's what's happening at <strong>
+                    <%= branding.schoolName %>
+                  </strong> today.
+                </p>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="row mb-4">
+
+                <% if (user.role==='super-admin' ) { %>
+                  <div class="col-6 col-md-4 col-lg-3 mb-3">
+                    <div class="stat-card" style="background: var(--grad-schools)">
+                      <i class="fa fa-university stat-card-icon"></i>
+                      <div class="stat-card-body">
+                        <div class="stat-card-value">
+                          <%= schools.length %>
                         </div>
-                </section>
-        </div>
+                        <div class="stat-card-label">Total Schools</div>
+                      </div>
+                    </div>
+                  </div>
+                  <% } %>
 
-        <script src="../../public/lib/jquery//jquery.min.js "></script>
-        <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
-        <script src="../../public/js/admin.js"></script>
-        
-    </body>
+                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                      <div class="stat-card" style="background: var(--grad-staff)">
+                        <i class="fa fa-users stat-card-icon"></i>
+                        <div class="stat-card-body">
+                          <div class="stat-card-value">
+                            <%= StaffReg.length %>
+                          </div>
+                          <div class="stat-card-label">
+                            <%= user.role==='super-admin' ? 'Total' : 'Reg.' %> Teachers
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                      <div class="stat-card" style="background: var(--grad-subjects)">
+                        <i class="fa fa-file-text stat-card-icon"></i>
+                        <div class="stat-card-body">
+                          <div class="stat-card-value">
+                            <%= SubjectsReg.length %>
+                          </div>
+                          <div class="stat-card-label">Subjects</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                      <div class="stat-card" style="background: var(--grad-students)">
+                        <i class="fa fa-graduation-cap stat-card-icon"></i>
+                        <div class="stat-card-body">
+                          <div class="stat-card-value">
+                            <%= StudentsReg.length %>
+                          </div>
+                          <div class="stat-card-label">Students</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                      <div class="stat-card" style="background: var(--grad-results)">
+                        <i class="fa fa-print stat-card-icon"></i>
+                        <div class="stat-card-body">
+                          <div class="stat-card-value">
+                            <%= uploadResult.length %>
+                          </div>
+                          <div class="stat-card-label">Results Declared</div>
+                        </div>
+                      </div>
+                    </div>
+
+              </div>
+
+              <!-- Quick actions -->
+              <div class="card mb-4" style="animation: fadeUp 0.5s ease 0.3s backwards">
+                <div class="card-header d-flex align-items-center gap-2">
+                  <i class="fa fa-bolt" style="color:var(--primary)"></i>
+                  <h5 class="m-0" style="font-size:14px;">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex flex-wrap">
+                    <% if (user.role==='admin' || user.role==='super-admin' ) { %>
+                      <a href="/admin/add-student" class="btn btn-primary btn-sm mr-3 mb-2">
+                        <i class="fa fa-plus mr-1"></i> Add Student
+                      </a>
+                      <a href="/admin/add-result" class="btn btn-success btn-sm mr-3 mb-2">
+                        <i class="fa fa-plus mr-1"></i> Add Result
+                      </a>
+                      <a href="/admin/manage-subject" class="btn btn-info btn-sm mr-3 mb-2">
+                        <i class="fa fa-book mr-1"></i> Manage Subjects
+                      </a>
+                      <% } %>
+                        <a href="/admin/manage-student" class="btn btn-secondary btn-sm mr-3 mb-2">
+                          <i class="fa fa-users mr-1"></i> View Students
+                        </a>
+                        <a href="/admin/manage-result" class="btn btn-secondary btn-sm mr-3 mb-2">
+                          <i class="fa fa-eye mr-1"></i> View Results
+                        </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Welcome Toast -->
+    <div class="rms-toast" id="welcomeToast">
+      <div class="rms-toast-icon"><i class="fa fa-check"></i></div>
+      <div class="rms-toast-text">
+        Welcome back, <strong>
+          <%= user.name %>
+        </strong>!<br>
+        <span style="color:var(--text-secondary); font-size:12px;">You're logged in as <%= user.role %>.</span>
+      </div>
+      <button class="rms-toast-close" id="closeToast" aria-label="Close">&times;</button>
+    </div>
+
+    <script src="/public/lib/jquery//jquery.min.js"></script>
+    <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script>
+      // Preloader
+      window.addEventListener('load', function () {
+        const pre = document.getElementById('preloader');
+        if (pre) { pre.style.opacity = '0'; setTimeout(() => pre.remove(), 300); }
+      });
+
+      // Toast auto-dismiss
+      (function () {
+        const toast = document.getElementById('welcomeToast');
+        const closeBtn = document.getElementById('closeToast');
+        if (closeBtn && toast) {
+          closeBtn.addEventListener('click', function () {
+            toast.style.animation = 'none';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 200);
+          });
+          setTimeout(function () {
+            if (toast.parentNode) {
+              toast.style.opacity = '0';
+              toast.style.transition = 'opacity 0.4s';
+              setTimeout(() => toast.remove(), 400);
+            }
+          }, 5000);
+        }
+      })();
+    </script>
+  </body>
 
 </html>

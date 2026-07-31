@@ -1,108 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-  <%- include('partials/head') %>
+<%- include('partials/head') %>
 
-  <body>
-    <div class="container-fluid">
-      <%- include('partials/header') %>
-      <section class="row">
-        <%- include('partials/nav') %>
-        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0">
-          <div class="w-100 p-2 bg-white mt-2 mb-2">
-            <h3 class="modal-header">Manage Subjects</h3>
-            <div class="breadcrumb bg-transparent p-0">
-              <div class="breadcrumb-item">Home</div>
-              <div class="breadcrumb-item">Subject</div>
-              <div class="breadcrumb-item">Manage-Subjects</div>
+<body>
+<div id="preloader"><div class="preloader-spinner"></div></div>
+<div class="container-fluid p-0">
+  <%- include('partials/header') %>
+  <section class="d-flex">
+    <%- include('partials/nav') %>
+    <div class="content rms-content flex-grow-1">
+
+      <!-- Page Header -->
+      <div class="rms-page-header">
+        <h3><i class="fa fa-list-alt mr-2" style="color:var(--primary)"></i>Manage Subjects</h3>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">Home</li>
+          <li class="breadcrumb-item">Subjects</li>
+          <li class="breadcrumb-item active">Manage Subjects</li>
+        </ol>
+      </div>
+      <!-- Toolbar -->
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-toggle="modal" data-target="#createSubjectModal">
+          <i class="fa fa-plus mr-1"></i> Create New Subject
+        </button>
+      </div>
+
+      <!-- Create Subject Modal -->
+      <div class="modal fade" id="createSubjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fa fa-plus-circle mr-2" style="color:var(--primary)"></i>Create Subject</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-          </div>
-
-          <!-- Modal -->
-          <%- include('../modal/comfirmdelete') %>
-
-          <div class="d-flex flex-wrap justify-content-center">
-            <div class="w-100">
-              <div class="col-12">
-                <div class="card">
-                  <div class="card-header">
-                    <h4 class="p-3">view Subject Info</h4>
-                  </div>
-
-                  <div class="card-body" id="overflow">
-                    <table class="table table-bordered table-striped">
-                      <thead>
-                        <th>#</th>
-                        <th>Subject Name</th>
-                        <th>Subject Code</th>
-                        <th>Craetion Date</th>
-                        <th>Updation Date</th>
-                        <th>Action</th>
-                      </thead>
-                      <tbody>
-                        <% if (docs.length != 0) { %> <% docs.forEach(doc => {
-                        %>
-                        <tr>
-                          <td><%= docs.indexOf(doc) + 1 %></td>
-                          <td>
-                            <input
-                              type="text"
-                              name="sname"
-                              value="<%= doc.sname %>"
-                              class="form-control bg-transparent border-0 unclick"
-                              disabled
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              name="scode"
-                              value="<%= doc.scode %>"
-                              class="form-control bg-transparent border-0 unclick"
-                              disabled
-                            />
-                          </td>
-
-                          <td><%= doc.createdAt.toLocaleString() %></td>
-                          <td><%= doc.updatedAt.toLocaleString() %></td>
-                          <td class="text-center actionBtn">
-                            <i
-                              class="btn btn-info fa fa-edit edit"
-                              id="<%= doc._id %>"
-                            ></i>
-                            <i
-                              class="btn btn-danger fa fa-trash-o btn-delete"
-                              data-target="#delete"
-                              data-toggle="modal"
-                              id="<%= doc._id %>"
-                            ></i>
-                          </td>
-                        </tr>
-                        <% }) %> <% } else{%>
-                        <p>You have not register any Subject</p>
-                        <% } %>
-                      </tbody>
-                    </table>
-                  </div>
+            <form id="createSubjectForm" class="mb-0">
+              <div class="modal-body">
+                <div class="alert alert-danger" id="createSubjectError" style="display:none; font-size:13px; padding:8px 12px;">Please fill in all fields below.</div>
+                <div class="form-group mb-0">
+                  <label>Subject Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="sname" required placeholder="e.g. Mathematics, English">
                 </div>
               </div>
-            </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i>Save Subject</button>
+              </div>
+            </form>
           </div>
         </div>
-      </section>
+      </div>
+
+      <!-- Delete Modal -->
+      <%- include('../modal/comfirmdelete') %>
+
+      <!-- Subjects Table -->
+      <div class="card">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="fa fa-list-alt mr-2" style="color:var(--primary)"></i>
+          <h4 class="m-0" style="font-size:15px;">Registered Subjects</h4>
+        </div>
+        <div class="card-body" id="overflow">
+          <table class="table table-striped" id="subject_table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject Name</th>
+                <th>Creation Date</th>
+                <th>Updated Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (docs.length != 0) { %> <% docs.forEach(doc => { %>
+              <tr>
+                <td><%= docs.indexOf(doc) + 1 %></td>
+                <td>
+                  <input type="text" name="sname" value="<%= doc.sname %>"
+                    class="form-control bg-transparent border-0 unclick" disabled />
+                </td>
+                <td><%= doc.createdAt.toLocaleString() %></td>
+                <td><%= doc.updatedAt.toLocaleString() %></td>
+                <td class="text-center actionBtn">
+                  <i class="btn btn-info btn-sm fa fa-edit edit" id="<%= doc._id %>"></i>
+                  <i class="btn btn-danger btn-sm fa fa-trash-o btn-delete"
+                     data-target="#delete" data-toggle="modal"
+                     id="<%= doc._id %>"></i>
+                </td>
+              </tr>
+              <% }) %> <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
+  </section>
+</div>
 
-    <script src="../../public/lib/jquery//jquery.min.js "></script>
-    <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
-    <script src="/public/js/edit.js"></script>
-    <script src="/public/js/ajaxDelete.js"></script>
-    <script src="../../public/js/admin.js"></script>
+<script src="/public/lib/jquery//jquery.min.js"></script>
+<script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="/public/js/edit.js"></script>
+<script src="/public/js/ajaxDelete.js"></script>
+<script src="/public/js/admin.js"></script>
+<script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+<script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+<script>
+  const url = window.location.pathname;
+  $(function () {
+    $('#subject_table').DataTable({ responsive: true });
 
-    <!-- datatable -->
-    <script src="../../public/lib/dt/datatables/jquery.dataTables.js"></script>
-    <script src="../../public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+    // Create Subject Form Submit
+    $('#createSubjectForm').on('submit', function(e) {
+      e.preventDefault();
+      const sname = $('#sname').val().toString().toUpperCase();
+      
+      if (!sname) {
+        $('#createSubjectError').show();
+        return;
+      }
+      $('#createSubjectError').hide();
 
-    <script>
-      const url = "<%= url %>";
-    </script>
-  </body>
+      $.post('/admin/subject', { sname }, function(data) {
+        if (data.type === 'danger') {
+          $('#createSubjectError').text(data.message).show();
+        } else {
+          location.reload();
+        }
+      }).fail(function(err) {
+        $('#createSubjectError').text('An error occurred. Please try again.').show();
+      });
+    });
+
+    $('#createSubjectModal input').on('focus', function() {
+      $('#createSubjectError').hide();
+    });
+  });
+</script>
+</body>
 </html>

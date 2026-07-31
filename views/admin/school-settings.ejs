@@ -1,0 +1,86 @@
+<%- include('partials/head') %>
+<body>
+  <div id="preloader"><div class="preloader-spinner"></div></div>
+  <div class="container-fluid p-0">
+    <%- include('partials/header') %>
+    <section class="d-flex">
+      <%- include('partials/nav') %>
+      <div class="content rms-content flex-grow-1">
+
+        <div class="rms-page-header">
+          <h3><i class="fa fa-cogs mr-2" style="color:var(--primary)"></i>School Settings</h3>
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">Home</li>
+            <li class="breadcrumb-item active">School Settings</li>
+          </ol>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header d-flex align-items-center gap-2">
+                <i class="fa fa-calendar mr-2" style="color:var(--primary)"></i>
+                <h4 class="m-0" style="font-size:15px;">Active Academic Configuration</h4>
+              </div>
+              <div class="card-body">
+                <form id="settingsForm">
+                  <div class="form-group">
+                    <label>Current Academic Session</label>
+                    <select class="form-control" name="currentSession" required>
+                      <% sessions.forEach(s => { %>
+                        <option value="<%= s.name %>" <%= school.currentSession === s.name ? 'selected' : '' %>><%= s.name %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Current Term</label>
+                    <select class="form-control" name="currentTerm" required>
+                      <option value="First" <%= school.currentTerm === 'First' ? 'selected' : '' %>>First Term</option>
+                      <option value="Second" <%= school.currentTerm === 'Second' ? 'selected' : '' %>>Second Term</option>
+                      <option value="Third" <%= school.currentTerm === 'Third' ? 'selected' : '' %>>Third Term</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i> Save Settings</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <script src="/public/lib/jquery//jquery.min.js"></script>
+  <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+  <script src="/public/js/admin.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      const pre = document.getElementById('preloader');
+      if (pre) { pre.style.opacity = '0'; setTimeout(() => pre.remove(), 300); }
+    });
+
+    $(function() {
+      $('#settingsForm').submit(function(e) {
+        e.preventDefault();
+        const data = {
+          currentSession: $('[name=currentSession]').val(),
+          currentTerm: $('[name=currentTerm]').val()
+        };
+        $.ajax({
+          url: '/admin/school-settings',
+          type: 'PUT',
+          data: data,
+          success: function() {
+            Toastify({ text: "Settings updated", duration: 1500, style: { background: "green" } }).showToast();
+            setTimeout(() => location.reload(), 1500);
+          },
+          error: function(err) {
+            Toastify({ text: "Failed to update settings", duration: 3000, style: { background: "red" } }).showToast();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

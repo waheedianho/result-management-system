@@ -55,6 +55,15 @@ $(document).ready(function () {
               s2.options.add(option);
           }
 
+          if (window.snameChoices) {
+              window.snameChoices.destroy();
+          }
+          window.snameChoices = new Choices('#sname', {
+              searchEnabled: true,
+              itemSelectText: '',
+              shouldSort: false
+          });
+
           // resultHolder.innerHTML = '';
           // for (let classRegSub of subjects) {
           //     console.log(classRegSub.subject);
@@ -75,22 +84,25 @@ $(document).ready(function () {
         const studentId = this.value;
         const classId = $('#sclass').val();
 
+        const session = $('#global_session').val();
+        const term = $('#global_term').val();
+
         try {
             const subjectsResponse = await fetch(`/admin/subject-combination/${classId}`);
-            const resultResponse = await fetch(`/admin/results?sclass=${classId}&student=${studentId}`); //session and term later
+            const resultResponse = await fetch(`/admin/results?sclass=${classId}&student=${studentId}&session=${encodeURIComponent(session)}&term=${encodeURIComponent(term)}`);
 
             const subjects = await subjectsResponse.json();
             const results = await resultResponse.json();
             console.log(subjects, classId);
 
-            const stuSubjects = results?.map(res => res?.subject?.subject)
-            console.log(stuSubjects);
+            const stuSubjects = results?.map(res => String(res?.subject?._id));
+            console.log("Recorded subject combinations:", stuSubjects);
 
             resultHolder.innerHTML = '';
             for (let classRegSub of subjects) {
-                console.log(classRegSub.subject);
-                if(!stuSubjects.includes(classRegSub.subject)) {
-                    const formField = studentSubjectsResult(classRegSub.subject, classRegSub._id);
+                console.log("Checking combination:", classRegSub.subject);
+                if(!stuSubjects.includes(String(classRegSub._id))) {
+                    const formField = studentSubjectsResult(classRegSub.subject?.sname, classRegSub._id);
                     resultHolder.appendChild(formField);
                 }
             }
@@ -100,6 +112,12 @@ $(document).ready(function () {
         }
 
 
+    });
+
+    $('#global_session, #global_term').change(function() {
+        if ($('#sname').val()) {
+            $('#sname').trigger('change');
+        }
     });
 
     $('#sclass_cb').change(function () {

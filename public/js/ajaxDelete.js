@@ -3,8 +3,7 @@ $(document).ready(() => {
   btnDelete = $('.btn-delete');
   isSetDelete = $('#comfirmDelete');
 
-  btnDelete.click(function () {
-    console.log(url);
+  $(document).on('click', '.btn-delete', function () {
     if (url != '/admin/manage-result') {
       currentRow = $(this).parents('tr');
       isSetDelete.click(() => {
@@ -23,28 +22,44 @@ $(document).ready(() => {
         });
       });
     } else {
-      console.log('wrong url', this.id);
-      fetch(`/admin/results?student=${this.id}`)
+      const studentName = $(this).closest('tr').find('td:nth-child(3) strong').text() || 'Student Results';
+      $('#student_name').text(studentName);
+      $('#prompt tbody').html('<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-2"></i>Loading results...</td></tr>');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('student', this.id);
+      
+      fetch(`/admin/results?${urlParams.toString()}`)
         .then(data => data.json())
         .then(resp => {
-          const selectStudent = resp; //.find(student => student._id == this.id);
-          console.log(selectStudent);
+          const selectStudent = resp || [];
           table = $('#prompt tbody');
-          template = selectStudent?.map((result, i) => {
+
+          if (selectStudent && selectStudent.length > 0 && selectStudent[0]?.student?.fname) {
+            $('#student_name').text(selectStudent[0].student.fname);
+          }
+
+          if (selectStudent.length === 0) {
+            table.html('<tr><td colspan="7" class="text-center py-4 text-muted">No results found for this student.</td></tr>');
+            return;
+          }
+
+          template = selectStudent.map((result, i) => {
+            const subjName = result?.subject?.subject?.sname || result?.subject?.sname || result?.subjectName || '';
             return $(` 
                   <tr>
                         <td>
                           ${i + 1}
                         </td>
                         <td>
-                          ${result?.subject?.subject}
+                          ${subjName}
                         </td>
                         <td>
                             <input
                             type="number"
                             name="ca_score"
-                            value=${result?.ca_score}
-                            class="form-control bg-transparent border-0 unclick"
+                            value="${result?.ca_score ?? ''}"
+                            class="form-control bg-transparent border-0 unclick text-center"
                             disabled
                             />
                         </td>
@@ -52,16 +67,16 @@ $(document).ready(() => {
                             <input
                             type="number"
                             name="exam_score"
-                            value=${result?.exam_score}
-                            class="form-control bg-transparent border-0 unclick"
+                            value="${result?.exam_score ?? ''}"
+                            class="form-control bg-transparent border-0 unclick text-center"
                             disabled
                             />
                         </td>
                         <td>
-                           ${result?.totalScore}
+                           ${result?.totalScore ?? ''}
                         </td>
                         <td>
-                            ${result.grade}
+                            ${result?.grade || ''}
                         </td>
                         <td class="text-center actionBtn">
                             <i class="btn btn-info fa fa-edit edit" id="${result._id}"></i>
@@ -70,87 +85,37 @@ $(document).ready(() => {
                 </tr>
               `);
           });
-            $('#student_name').text(`${selectStudent[0]?.student?.fname}`)   //;
-            table.html(template);
-
-          //===========================hiding preloader ========================
-          if ($('#preloader').length) {
-            $('#preloader')
-              .delay(100)
-              .fadeOut('slow', function () {
-                $(this).remove();
-              });
-          }
-          //================== end of hiding pre load ===========================
+          table.html(template);
 
           studentId = this.id;
           $('.comfirmDelete').click(function () {
             resultId = this.id;
             currentRow = $(this).parents('tr');
-            console.log(studentId, resultId);
-            $.ajax({
-              type: 'Delete',
-              url: `${url}/${resultId}`,  //`/admin/results/${resultId}`, //url,
-              // data: { studentId, subjectId },
-              dataType: 'json',
-              success: resp => {
-                currentRow.fadeOut(1000);
-                location.reload();
-              },
-              error: function (err) {
-                console.log(err);
-              },
-            });
-          });
-
-          $('.edit').on('click', function () {
-            const id = this.id;
-            console.log(id);
-            const currentRow = $(this).parents('tr');
-            const inputs = currentRow.find('input');
-            const actionBtn = currentRow.find('.actionBtn');
-            console.log(actionBtn);
-
-            inputs.removeAttr('disabled').addClass('change-cursor');
-            inputs[0].focus();
-            console.log(studentId);
-            let data = { };
-            let change = false;
-            inputs.on('change', function (e) {
-              change = true;
-              dataAttr = e.target.getAttribute('name');
-              dataValue = e.target.value;
-
-              // storing value and name dynaically
-              data[dataAttr] =
-                typeof dataValue === 'string'
-                  ? dataValue.toUpperCase()
-                  : dataValue;
-              // console.log(data);
-              actionBtn.html(
-                $(
-                  `<i class="btn btn-success w-75 fa fa-check-circle-o comfirmEdit"></i>`
-                )
-              );
-
-              console.log($('.comfirmEdit'));
-              // comfirm Key press
-              $('.comfirmEdit').click(function () {
-                $.ajax({
-                  type: 'Put',
-                  url: `${url}/${id}`, //`/admin/results/${id}`, //url + '/' + id,
-                  data: data,
-                  dataType: 'json',
-                  success: data => {
-                    console.log(data);
-                    location.reload();
-                  },
-                });
-                console.log('data received', data);
-                //   location.reload();
+            
+            // Show the system delete modal
+            $('#delete').modal('show');
+            
+            // Handle confirmation
+            $('#comfirmDelete').off('click').on('click', function () {
+              $.ajax({
+                type: 'Delete',
+                url: `${url}/${resultId}`,
+                dataType: 'json',
+                success: resp => {
+                  currentRow.fadeOut(1000);
+                  $('#delete').modal('hide');
+                  location.reload();
+                },
+                error: function (err) {
+                  console.log(err);
+                },
               });
             });
           });
+        })
+        .catch(err => {
+          console.error('Error fetching results:', err);
+          $('#prompt tbody').html('<tr><td colspan="7" class="text-center py-4 text-danger">Failed to load results.</td></tr>');
         });
     }
   });
