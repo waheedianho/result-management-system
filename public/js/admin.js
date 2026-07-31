@@ -1,3 +1,10 @@
+// Hide preloader once the page is fully loaded
+$(window).on('load', function () {
+  var $pre = $('#preloader');
+  $pre.css('opacity', '0');
+  setTimeout(function () { $pre.hide(); }, 300);
+});
+
 $(document).ready(function () {
   $("nav .nav-link").click(function () {
     const ul = $(this).siblings();

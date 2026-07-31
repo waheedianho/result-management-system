@@ -1,92 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../public/lib/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" href="../public/lib/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../public/css/style.css">
-    <title>STUDENT RESULT MANAGEMENT SYSTEM</title>
-    <style>
-        input:focus {
-            outline: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Student Result Management System — Admin Login">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../public/lib/bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="../public/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../public/css/theme.css">
+  <title><%- (typeof branding !=='undefined' ? branding.schoolName : 'EduAdmin' ) %> — Login</title>
+  <style>
+    <% if (typeof branding !=='undefined' && branding) {
+      %> :root {
+        --primary: <%=branding.primaryColor || '#6366f1' %>;
+        --accent: <%=branding.accentColor || '#8b5cf6' %>;
+      }
+
+      <%
+    }
+
+    %>
+  </style>
 </head>
 
-<body>
-    <div class="container-fluid bg">
-        <h3 class="text-center p-3">STUDENT RESULT MANAGEMENT SYSTEM</h3>
+<body style="margin:0;padding:0;">
 
-        <div class="d-flex justify-content-center align-items-center w-100" id="loginPanel">
-            <div class="container"> 
-                 <div class="row mb-5">
-                    <div class="student col-sm-12 col-md-5 p-5">
-                        <div class="card">
-                            <div class=" card-body text-center">
-                                <h5>For Students</h5>
-                                <p>Student Result Management System</p>
-                                <h6>Search your result <a href="/student/login" target="blank">Click here</a></h6>
-                            </div>
-                        </div>
-                    </div>
+  <div class="rms-public-bg">
+    <!-- Brand Panel (left) -->
+    <div class="rms-login-brand">
+      <% const _b=(typeof branding !=='undefined' ) ? branding : { schoolName: 'EduAdmin' , logoUrl: null,
+        tagline: 'Result Management System' }; %>
+        <% const _i=_b.schoolName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); %>
 
-                    <div class="admin col-sm-12 col-md-7 p-5">
-                        <div class="card">
-                            <div class=" card-body">
-                                <h5 class="text-center">Admin Login</h5>
-                                <p>Student Result Management System</p>
-                                <form action="/admin/dashboard" method="POST">
-                                    <div class=" form-row mb-3">
-                                        <div class="col-12">
-                                            <div class="form-control">
-                                                <div class="d-flex">
-                                                    <div class="col-1 p-0 border-right">
-                                                        <i class="fa fa-envelope"></i>
-                                                    </div>
-                                                    <div class="col-11 p-0">
-                                                        <input type="email" name="username" id="email" class="w-100 p-0" required>
-                                                    </div>
-                                                </div>
+    <% if (_b.logoUrl) { %>
+      <img src="<%= _b.logoUrl %>" alt="<%= _b.schoolName %>" class="rms-login-brand-logo">
+    <% } else { %>
+      <!-- <div class="rms-login-brand-initials"><%= _i %></div> -->
+    <% } %>
 
-                                            </div>
-                                        </div>
-                                    </div>
+    <h1><%= "Result Management System" %></h1>
+    <!-- <p><%= _b.tagline || ' Student ' %> -->
+          </p>
 
-                                    <div class=" form-row mb-3">
-                                        <div class="col-12">
-                                            <div class="form-control">
-                                                <div class="d-flex">
-                                                    <div class="col-1 p-0 border-right">
-                                                        <i class="fa fa-lock"></i>
-                                                    </div>
-                                                    <div class="col-11 p-0">
-                                                        <input type="password" name="password" id="pswrd" class="w-100 p-0" required>
-                                                    </div>
-                                                </div>
+          <!-- Feature pills -->
+          <div class="d-flex flex-column gap-2" style="z-index:1;gap:10px!important;">
+            <div
+              style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.12);border-radius:30px;padding:8px 16px;font-size:13px;">
+              <i class="fa fa-shield"></i> Secure admin portal
+            </div>
+            <div
+              style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.12);border-radius:30px;padding:8px 16px;font-size:13px;">
+              <i class="fa fa-graduation-cap"></i> Manage students & results
+            </div>
+            <div
+              style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.12);border-radius:30px;padding:8px 16px;font-size:13px;">
+              <i class="fa fa-bar-chart"></i> Generate class reports
+            </div>
+          </div>
 
-                                            </div>
-                                        </div>
-                                    </div>
+          <!-- Dark/light toggle for the public page -->
+          <button class="btn-theme-toggle" id="publicThemeToggle"
+            style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;">
+            <i class="fa fa-moon-o" id="publicThemeIcon"></i>
+          </button>
+    </div>
 
-                                    <button type="submit" class="btn btn-success" id="login" ><i class=" far fa fa-sign-in"></i> Login</button>
-                            </div>
+    <!-- Login Form (right) -->
+    <div class="rms-login-form-side">
+      <div class="rms-login-card">
 
-                            </form>
-                        </div>
-                    </div>
-                </div>
-             </div>
+        <!-- Admin login -->
+        <h2>Admin Login</h2>
+        <p>Sign in to manage your school's results and data.</p>
 
-        </div>
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger" style="font-size: 13px; padding: 10px; margin-bottom: 20px;">
+            <i class="fa fa-exclamation-circle mr-1"></i> Invalid username or password
+          </div>
+        <% } %>
 
+          <form action="/admin/dashboard" method="POST" id="adminLoginForm">
+            <div class="form-group mb-3">
+              <label for="adminEmail">Email Address</label>
+              <div class="rms-input-group" style="margin-bottom: 0;">
+                <i class="fa fa-envelope input-icon"></i>
+                <input type="email" name="username" id="adminEmail" class="form-control" placeholder="admin@school.edu"
+                  required>
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="adminPswrd">Password</label>
+              <div class="rms-input-group" style="margin-bottom: 0;">
+                <i class="fa fa-lock input-icon"></i>
+                <input type="password" name="password" id="adminPswrd" class="form-control" placeholder="••••••••"
+                  required>
+                <button type="button" id="togglePwd"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;">
+                  <i class="fa fa-eye-slash" id="togglePwdIcon"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-3" id="loginBtn"
+              style="padding:11px!important;font-size:14px!important;">
+              <i class="fa fa-sign-in mr-2"></i>Sign In
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div style="display:flex;align-items:center;gap:12px;margin:16px 0;">
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+            <span style="color:var(--text-muted);font-size:12px;">or</span>
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+          </div>
+
+          <!-- Student result checker -->
+          <div
+            style="background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;text-align:center;">
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:10px;">
+              <i class="fa fa-graduation-cap mr-1" style="color:var(--primary)"></i>
+              Are you a student?
+            </p>
+            <a href="/student/login" class="btn btn-secondary w-100" style="font-size:13px!important;">
+              <i class="fa fa-search mr-2"></i>Check Your Result
+            </a>
+          </div>
 
     </div>
-    <!-- <footer class="fixed-bottom w-100 text-center bg-success p-2 text-white">
-        <h6>WAHEEDIANHO 2020 SRM</h6>
-        <p>Design and Develop by <strong>Ogidi Safiu Waheed</strong></p>
-    </footer> -->
-    </div>
+  </div>
+  </div>
+
+  <!-- Dark/light toggle script -->
+  <script>
+    (function () {
+      const STORAGE_KEY = 'rms-theme';
+      const btn = document.getElementById('publicThemeToggle');
+      const icon = document.getElementById('publicThemeIcon');
+      function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem(STORAGE_KEY, t);
+        if (icon) icon.className = t === 'dark' ? 'fa fa-sun-o' : 'fa fa-moon-o';
+      }
+      const saved = localStorage.getItem(STORAGE_KEY);
+      applyTheme(saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      if (btn) btn.addEventListener('click', function () {
+        applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+    })();
+
+    // Toggle password visibility
+    const toggleBtn = document.getElementById('togglePwd');
+    const pwdInput = document.getElementById('adminPswrd');
+    const toggleIcon = document.getElementById('togglePwdIcon');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        const isText = pwdInput.type === 'text';
+        pwdInput.type = isText ? 'password' : 'text';
+        toggleIcon.className = isText ? 'fa fa-eye-slash' : 'fa fa-eye';
+      });
+    }
+  </script>
 </body>
+
 </html>

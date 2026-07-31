@@ -27,8 +27,9 @@ const Subjects = require('../../model/subject');
 const Students = require('../../model/student');
 const Result = require("../../model/result");
 const {getResult} = require("../student");
-const {academic_session, academic_term} = require("../../config");
+// config.js dependency removed
 const SubjectCombination = require("../../model/subject-combination");
+const School = require("../../model/school");
 
 // const { Subjects, ClassModel, Students } = require('../../model/schema');
 //===========================================================
@@ -40,9 +41,12 @@ result = async (req, res) => {
         query._id = req.user.assignedClass;
     }
     const sclasses = await ClassModel.find(query, 'cname cnameNum');
+    const AcademicSession = require('../../model/academic-session');
+    const sessions = await AcademicSession.find().sort({ createdAt: -1 });
     res.render('admin/add-result', {
         classes: sclasses,
         subjects: [],
+        sessions: sessions
     })
 };
 
@@ -51,17 +55,49 @@ addResult = async (req, res, next) => {
   if (req.body.hasOwnProperty('type') && req.body.type === 'json') {
     const { results } = req.body;
       
-      // Multi-tenancy & Teacher restriction
-      const resultsWithSchool = results.map(r => ({ ...r, schoolId: req.user.schoolId }));
+      // Teacher restriction
       if (req.user.role === 'teacher') {
-          const unauthorized = resultsWithSchool.find(r => r.sclass.toString() !== req.user.assignedClass?.toString());
+          const unauthorized = results.find(r => r.sclass.toString() !== req.user.assignedClass?.toString());
           if (unauthorized) return res.status(403).json({ message: "Unauthorized to add results for this class" });
       }
 
-      await Result.create(resultsWithSchool);
+      if (results.length > 0) {
+          const ops = results.map(r => {
+              const ca = Number(r.ca_score) || 0;
+              const exam = Number(r.exam_score) || 0;
+              const totalScore = ca + exam;
+              
+              return {
+                  updateOne: {
+                      filter: {
+                          student: r.student,
+                          subject: r.subject,
+                          session: r.session,
+                          term: r.term,
+                          schoolId: req.user.schoolId
+                      },
+                      update: {
+                          $set: {
+                              sclass: r.sclass,
+                              ca_score: ca,
+                              exam_score: exam,
+                              totalScore: totalScore,
+                              grade: calculatrGrade(totalScore),
+                              isRetake: r.isRetake || false,
+                              schoolId: req.user.schoolId
+                          }
+                      },
+                      upsert: true
+                  }
+              };
+          });
+
+          await Result.bulkWrite(ops, { ordered: false });
+      }
+
       res.json({
           type: 'success',
-          message: `subject added successfully`,
+          message: `Result uploaded successfully`,
       });
 
   } else {
@@ -135,6 +171,10 @@ addResult = async (req, res, next) => {
                       combos.map(sc => [sc.subject.sname.toString().trim().toLowerCase(), sc._id])
                   );
               }
+
+              const school = await School.findById(req.user.schoolId);
+              const academic_session = school.currentSession;
+              const academic_term = school.currentTerm;
 
               // Process each student row (from row index 2 onward)
               const ops = [];
@@ -318,6 +358,9 @@ calculatrGrade = (totalScore) => {
 };
 
 manageResult = async (req, res) => {
+    const school = await School.findById(req.user.schoolId);
+    const academic_session = school.currentSession;
+    const academic_term = school.currentTerm;
     const q = { ...req.query };
     q.schoolId = req.user.schoolId;
 
@@ -338,6 +381,9 @@ manageResult = async (req, res) => {
     }
     const classes = await ClassModel.find(classQuery);
 
+    const AcademicSession = require('../../model/academic-session');
+    const sessions = await AcademicSession.find().sort({ createdAt: -1 });
+
     const studentResultGroouped = await Result.aggregate([
         { $match: { session: academic_session, term: academic_term, ...q } },
         { $group: {
@@ -352,9 +398,7 @@ manageResult = async (req, res) => {
         { $unwind: "$student" }
     ]);
     const students = studentResultGroouped?.map(el =>  ({ ...el.student, count: el.count, updatedAt: el.lastUpdatedDate }))
-    console.log(students)
-    console.log(req.url, "something is wrong")
-    res.render('admin/manage-results', { students, url: req.url, classes });
+    res.render('admin/manage-results', { students, url: req.url, classes, sessions });
 
   // Students.find({}).populate('result').then(students => {
   //     // console.log(students[0].result)
@@ -378,11 +422,15 @@ deleteResult = async (req, res) => {
 updateReSult = async (req, res) => {
     const id = req.params.id;
     const { ca_score, exam_score } = req.body;
+    const ca = Number(ca_score || 0);
+    const exam = Number(exam_score || 0);
+    const totalScore = ca + exam;
+    const grade = calculatrGrade(totalScore);
     const query = { _id: id, schoolId: req.user.schoolId };
     if (req.user.role === 'teacher' && req.user.assignedClass) {
         query.sclass = req.user.assignedClass;
     }
-    const resp = await Result.findOneAndUpdate(query, { ca_score, exam_score }, { new: true });
+    const resp = await Result.findOneAndUpdate(query, { ca_score: ca, exam_score: exam, totalScore, grade }, { new: true });
     if (!resp) return res.status(403).json({ message: "Unauthorized or not found" });
     res.json(resp);
   // delete req.body.studentId;
@@ -472,22 +520,33 @@ getResultUploadTemplate = async (req, res) =>  {
 
 
 getResults = async (req, res) => {
-    const query = { ...(req.query || {}), schoolId: req.user.schoolId };
+    const school = await School.findById(req.user.schoolId);
+    const academic_session = req.query.session || school.currentSession;
+    const academic_term = req.query.term || school.currentTerm;
+    const query = { ...(req.query || {}), schoolId: req.user.schoolId, session: academic_session, term: academic_term };
     if (req.user.role === 'teacher' && req.user.assignedClass) {
         query.sclass = req.user.assignedClass;
     }
-    const results = await Result.find({...query, session: academic_session, term: academic_term }).populate(['subject', 'student']);
+    const results = await Result.find(query)
+        .populate({
+            path: 'subject',
+            populate: { path: 'subject' }
+        })
+        .populate('student');
     console.log(results);
     return res.json(results);
 }
 generateClassResultsPage = async (req, res) => {
     try {
+        const school = await School.findById(req.user.schoolId);
+        const academic_session = school.currentSession;
+        const academic_term = school.currentTerm;
         let classId = req.query.sclass;
         if (req.user.role === 'teacher' && req.user.assignedClass) {
             classId = req.user.assignedClass.toString();
         }
         if (!classId) {
-            return res.status(400).send('Missing sclass');
+            return res.redirect('/admin/manage-result');
         }
         const filter = { sclass: classId, session: academic_session, term: academic_term, schoolId: req.user.schoolId };
         // Populate student and nested subject (SubjectCombination -> Subject)
@@ -534,6 +593,9 @@ generateClassResultsPage = async (req, res) => {
 
 generateClassAnnualResultsPage = async (req, res) => {
     try {
+        const school = await School.findById(req.user.schoolId);
+        const academic_session = school.currentSession;
+        const academic_term = school.currentTerm;
         let sclass = req.query.sclass;
         if (req.user.role === 'teacher' && req.user.assignedClass) {
             sclass = req.user.assignedClass.toString();
@@ -541,7 +603,7 @@ generateClassAnnualResultsPage = async (req, res) => {
         const session = String(req.query.session || academic_session);
         const term = String(req.query.term || academic_term);   
         if (!sclass) {
-            return res.status(400).send('Missing sclass');
+            return res.redirect('/admin/manage-result');
         }
         const baseUrl = `${req.protocol}://${req.get('host')}`;
         const absUrl = (u) => {

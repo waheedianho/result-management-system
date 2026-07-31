@@ -1,91 +1,185 @@
-<div class="navPanel col-lg-3 bg-secondary text-white">
-    <p class="text-center pt-2">MAIN CATEGORIES</p>
-    <a href="/admin/dashboard">
-        <h4 class="dashboard"><i class="fa fa-home"></i> Dashboard</h4>
-    </a>
-    <p class="mt-4">APPEARANCE</p>
+<%
+  const _brandName2 = branding.schoolName || 'EduAdmin';
+  const _initials2 = _brandName2.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const _currentUrl = (typeof url !== 'undefined') ? url : '';
+  function isActive(path) {
+    return _currentUrl && _currentUrl.startsWith(path) ? 'active-link' : '';
+  }
+%>
 
-    <nav>
-        <ul class="navbar-nav border-0">
-            <% if (user.role === 'super-admin') { %>
-            <li class="nav-item">
-                <a href="/admin/manage-schools" class="nav-link">
-                    <i class="fa fa-university pr-3"> </i> Manage Schools
-                </a>
-            </li>
-            <% } %>
-            <% if (user.role === 'admin' || user.role === 'super-admin') { %>
-            <li class="nav-item">
-                <a href="#"class="nav-link">
-                    <i class="fa fa-list-ul pr-3"></i> Student Clases
-                    <i class="fa fa-caret-right  float-right"></i>
-                </a>
+<nav class="navPanel" id="navPanel">
+  <!-- Brand Strip -->
+  <a href="/admin/dashboard" class="sidebar-brand">
+    <% if (branding.logoUrl) { %>
+      <img src="<%= branding.logoUrl %>" alt="<%= _brandName2 %>" class="sidebar-brand-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="sidebar-brand-initials" style="display:none"><%= _initials2 %></div>
+    <% } else { %>
+      <div class="sidebar-brand-initials"><%= _initials2 %></div>
+    <% } %>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name"><%= _brandName2 %></span>
+      <% if (branding.tagline) { %>
+        <span class="sidebar-brand-tagline"><%= branding.tagline %></span>
+      <% } else { %>
+        <span class="sidebar-brand-tagline">Result Management System</span>
+      <% } %>
+    </div>
+  </a>
 
-                <ul class="bg-dark">
-                    <li>
-                        <a href="/admin/create-class"> <i class="fa fa-edit pr-1"></i> Create Class</a>
-                    </li>
-                    <li><a href="/admin/manage-classes"><i class="fa fa-eye pr-1"></i> Manage Classes</a></li>
-                </ul>
-            </li>
-            <li class="nav-item">
-                <a href="#"class="nav-link">
-                    <i class="fa fa-book pr-3"> </i> Subjects/Course
-                    <i class="fa fa-caret-right  float-right"></i>
-                </a>
+  <!-- Navigation -->
+  <p class="sidebar-section-label">Main Menu</p>
 
-                <ul class="bg-dark">
-                    <li>
-                        <a href="/admin/subject"> <i class="fa fa-edit pr-1"></i> Create Subject</a>
-                    </li>
-                    <li><a href="/admin/manage-subject"><i class="fa fa-eye pr-1"></i> Manage Subjects</a></li>
-                    <li><a href="/admin/subject-combination"><i class="fa fa-edit pr-1"></i> Subject Combination</a></li>
-                    <li><a href="/admin/manage-subject-combination"><i class="fa fa-eye pr-1"></i>Manage Subject Combination</a></li>
-                    <!-- <li><a href="#"><i class="fa fa-plus pr-1"></i> Add Subject</a></li> -->
-                </ul>
-            </li>
-            <% } %>
-            <li class="nav-item">
-                <a href="#"class="nav-link">
-                    <i class="fa fa-users pr-3"> </i> Students
-                    <i class="fa fa-caret-right  float-right"></i>
-                </a>
+  <ul class="navbar-nav border-0 flex-column w-100">
 
-                <ul class="bg-dark">
-                    <% if (user.role === 'admin' || user.role === 'super-admin') { %>
-                    <li>
-                        <a href="/admin/add-student"> <i class="fa fa-plus pr-1"></i>Add Student</a>
-                    </li>
-                    <% } %>
-                    <li><a href="/admin/manage-student"><i class="fa fa-eye pr-1"></i> Manage Students</a></li>
-                </ul>
-            </li>
-            <% if (user.role === 'admin' || user.role === 'super-admin') { %>
-            <li class="nav-item">
-                <a href="#"class="nav-link">
-                    <i class="fa fa-user-secret pr-3"> </i> Staff
-                    <i class="fa fa-caret-right  float-right"></i>
-                </a>
+    <!-- Dashboard -->
+    <li class="nav-item">
+      <a href="/admin/dashboard" class="nav-link <%= isActive('/admin/dashboard') %>">
+        <i class="fa fa-home"></i> Dashboard
+      </a>
+    </li>
 
-                <ul class="bg-dark">
-                    <li><a href="/admin/manage-staff"><i class="fa fa-eye pr-1"></i> Manage Staff</a></li>
-                </ul>
-            </li>
-            <% } %>
-            <li class="nav-item">
-                <a href="#"class="nav-link">
-                    <i class="fa fa-print pr-3"></i> Result
-                    <i class="fa fa-caret-right  float-right"></i>
-                </a>
+    <p class="sidebar-section-label">Management</p>
 
-                <ul class="bg-dark">
-                    <li>
-                        <a href="/admin/add-result"> <i class="fa fa-plus pr-1"></i>Add Result</a>
-                    </li>
-                    <li><a href="/admin/manage-result"><i class="fa fa-eye pr-1"></i> Manage Results</a></li>
-                </ul>
-            </li>
-            <li class="nav-item border-0"><a href="#"class="nav-link"><i class="fa fa-lock pr-3"></i> Admin Change Password</a></li>
-        </ul>
-    </nav>
-</div>
+    <!-- Manage Schools (super-admin only) -->
+    <% if (user.role === 'super-admin') { %>
+      <li class="nav-item">
+        <a href="/admin/manage-schools" class="nav-link <%= isActive('/admin/manage-schools') %>">
+          <i class="fa fa-university"></i> Manage Schools
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/admin/manage-sessions" class="nav-link <%= isActive('/admin/manage-sessions') %>">
+          <i class="fa fa-calendar"></i> Manage Sessions
+        </a>
+      </li>
+    <% } %>
+
+    <% if (user.role === 'admin') { %>
+      <p class="sidebar-section-label">Settings</p>
+      <li class="nav-item">
+        <a href="/admin/school-settings" class="nav-link <%= isActive('/admin/school-settings') %>">
+          <i class="fa fa-cogs"></i> School Settings
+        </a>
+      </li>
+    <% } %>
+
+    <!-- Student Classes -->
+    <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+    <li class="nav-item">
+      <a href="/admin/manage-classes" class="nav-link <%= isActive('/admin/manage-classes') %>">
+        <i class="fa fa-list-ul"></i> Student Classes
+      </a>
+    </li>
+    <% } %>
+
+    <!-- Subjects -->
+    <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-submenu="subjects">
+        <i class="fa fa-book"></i> Subjects / Course
+        <i class="fa fa-caret-right"></i>
+      </a>
+      <ul id="sub-subjects">
+        <li><a href="/admin/manage-subject"><i class="fa fa-eye"></i> Manage Subjects</a></li>
+        <li><a href="/admin/manage-subject-combination"><i class="fa fa-eye"></i> Manage Combinations</a></li>
+      </ul>
+    </li>
+    <% } %>
+
+    <!-- Students -->
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-submenu="students">
+        <i class="fa fa-users"></i> Students
+        <i class="fa fa-caret-right"></i>
+      </a>
+      <ul id="sub-students">
+        <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+        <li><a href="/admin/add-student"><i class="fa fa-plus"></i> Add Student</a></li>
+        <% } %>
+        <li><a href="/admin/manage-student"><i class="fa fa-eye"></i> Manage Students</a></li>
+      </ul>
+    </li>
+
+    <!-- Staff -->
+    <% if (user.role === 'admin' || user.role === 'super-admin') { %>
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-submenu="staff">
+        <i class="fa fa-user-secret"></i> Staff
+        <i class="fa fa-caret-right"></i>
+      </a>
+      <ul id="sub-staff">
+        <li><a href="/admin/manage-staff"><i class="fa fa-eye"></i> Manage Staff</a></li>
+      </ul>
+    </li>
+    <% } %>
+
+    <!-- Results -->
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-submenu="results">
+        <i class="fa fa-print"></i> Results
+        <i class="fa fa-caret-right"></i>
+      </a>
+      <ul id="sub-results">
+        <li><a href="/admin/add-result"><i class="fa fa-plus"></i> Add Result</a></li>
+        <li><a href="/admin/manage-result"><i class="fa fa-eye"></i> Manage Results</a></li>
+      </ul>
+    </li>
+
+    <p class="sidebar-section-label">Account</p>
+
+    <!-- Change Password -->
+    <li class="nav-item">
+      <a href="/admin/change-password" class="nav-link <%= isActive('/admin/change-password') %>">
+        <i class="fa fa-lock"></i> Change Password
+      </a>
+    </li>
+
+    <!-- Logout -->
+    <li class="nav-item">
+      <a href="/logout" class="nav-link" style="color: #fca5a5 !important;">
+        <i class="fa fa-sign-out"></i> Logout
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<script>
+  // ── Collapsible sub-menus ──────────────────────────────────
+  (function() {
+    const links = document.querySelectorAll('.nav-link[data-submenu]');
+    links.forEach(function(link) {
+      const key = link.getAttribute('data-submenu');
+      const sub = document.getElementById('sub-' + key);
+      if (!sub) return;
+
+      // Restore open state from sessionStorage
+      if (sessionStorage.getItem('nav-open-' + key) === '1') {
+        link.classList.add('open');
+      }
+
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const isOpen = this.classList.toggle('open');
+        sessionStorage.setItem('nav-open-' + key, isOpen ? '1' : '0');
+      });
+    });
+
+    // Auto-expand submenu if a child link matches the current URL
+    const current = window.location.pathname;
+    document.querySelectorAll('.navPanel .nav-link ~ ul a').forEach(function(a) {
+      if (a.getAttribute('href') && current.startsWith(a.getAttribute('href'))) {
+        a.style.color = '#fff';
+        a.style.fontWeight = '600';
+        const parent = a.closest('ul');
+        if (parent) {
+          const parentLink = parent.previousElementSibling;
+          if (parentLink) {
+            parentLink.classList.add('open');
+            const key = parentLink.getAttribute('data-submenu');
+            if (key) sessionStorage.setItem('nav-open-' + key, '1');
+          }
+        }
+      }
+    });
+  })();
+</script>

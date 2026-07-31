@@ -1,178 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <%- include('partials/head') %>
-<script src="/public/lib/jquery//jquery.min.js "></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
-    <body>
-        <div class="container-fluid">
-            <%- include('partials/header') %>
-                <section class="row">
-                    <%- include('partials/nav') %>
-                        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0 ">
-                            <div class="w-100 p-2 bg-white mt-2 mb-2">
-                                <h3 class=" modal-header">Manage Student</h3>
-                                <div class="breadcrumb bg-transparent p-0">
-                                    <div class="breadcrumb-item">Home</div>
-                                    <div class="breadcrumb-item">Subject</div>
-                                    <div class="breadcrumb-item">Manage-Students</div>
-                                </div>
-                            </div>
+  <body>
+    <div id="preloader">
+      <div class="preloader-spinner"></div>
+    </div>
+    <div class="container-fluid p-0">
+      <%- include('partials/header') %>
+        <section class="d-flex">
+          <%- include('partials/nav') %>
+            <div class="content rms-content flex-grow-1">
 
-                            <!-- Modal -->
-                            <%- include('../modal/comfirmdelete') %>
-                            <!-- Modal -->
-                            <%- include('../modal/prompt') %>
+              <!-- Page Header -->
+              <div class="rms-page-header">
+                <h3><i class="fa fa-bar-chart mr-2" style="color:var(--primary)"></i>Manage Results</h3>
+                <ol class="breadcrumb mb-0">
+                  <li class="breadcrumb-item">Home</li>
+                  <li class="breadcrumb-item">Results</li>
+                  <li class="breadcrumb-item active">Manage Results</li>
+                </ol>
+              </div>
 
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="card">
-                                                <div class="card-header d-flex justify-content-between">
-                                                    <h4 class="p-3">View Student Info</h4>
-                                                     <div class="col-4 text-right">
-                                                         <select class="form-control" name="sclass" id="filter">
-                                                             <option value="">All</option>
-                                                             <% classes.forEach(cls => { %>
-                                                                <option value="<%= cls._id %>" ><%= cls.cname %></option>
-                                                                 <script>
-                                                                     $(document).ready(function () {
-                                                                         // Get sclass from URL
-                                                                         const params = new URLSearchParams(window.location.search);
-                                                                         const selectedClass = params.get('sclass');
-                                                                         console.log(selectedClass);
-                                                             
-                                                                         // Set selected option if sclass exists
-                                                                         if(selectedClass) {
-                                                                           $('#filter').val(selectedClass);
-                                                                         }
-                                                                    });
-                                                             </script>
+              <!-- Modals -->
+              <%- include('../modal/prompt') %>
+                <%- include('../modal/comfirmdelete') %>
 
-                                                             <%})%>
-                                                         </select>
-                                                    <button class="btn btn-primary mt-2" id="generate-result">Generate Result</button>
-                                                     </div>
-                                                </div>
-
-                                                <div class=" card-body" id="overflow">
-                                                    <table class="table table-bordered table-striped tdata">
-                                                        <thead>
-                                                            <th>#</th>
-                                                            <th>Roll ID</th>
-                                                            <th>Student Name</th>
-                                                            <th>No of Result Upload</th>
-                                                            <th>Date Modifield</th>
-                                                            <th>Action</th>
-                                                        </thead>
-                                                        <tbody>
-                                                            <% if (students.length !=0) { %>
-
-                                                                <% students.forEach(student => { %>
-                                                                    <tr>
-                                                                        <td>
-                                                                            <%= students.indexOf(student) + 1 %>
-                                                                        </td>
-                                                                        <td>
-                                                                            <%= student.rollId %>
-                                                                        </td>
-                                                                        <td>
-                                                                            <%= student.fname %>
-                                                                        </td>
-                                                                        <td>
-                                                                            <%= student?.count %>
-                                                                        </td>
-                                                                        
-                                                                        <td>
-                                                                            <%= student.updatedAt.toLocaleString() %>
-                                                                        </td>
-                                                                        <td>
-                                                                            <i class="btn btn-info fa fa-edit btn-delete btn-lg"
-                                                                                data-target="#manage_result"
-                                                                                data-toggle="modal"
-                                                                                id="<%= student._id %>"></i>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <% }) %>
-
-                                                                        <% } else{%>
-                                                                            <p>You have not register any Class</p>
-                                                                            <% } %>
-
-
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
+                  <!-- Results Table Card -->
+                  <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="fa fa-bar-chart mr-2" style="color:var(--primary)"></i>
+                        <h4 class="m-0" style="font-size:15px;">Student Result Overview</h4>
+                      </div>
+                      <div class="d-flex flex-row align-items-center gap-2">
+                        <div class="mb-0">
+                          <select class="form-control" name="sclass" id="filter" style="min-width:160px;">
+                            <option value="">All Classes</option>
+                            <% classes.forEach(cls=> { %>
+                              <option value="<%= cls._id %>">
+                                <%= cls.cname %>
+                              </option>
+                              <% }) %>
+                          </select>
                         </div>
-                </section>
-        </div>
+                        <div class="mb-0">
+                          <select class="form-control" name="session" id="filter-session" style="min-width:160px;">
+                            <option value="">Current Session</option>
+                            <% if (typeof sessions !=='undefined' ) { %>
+                              <% sessions.forEach(s=> { %>
+                                <option value="<%= s.name %>">
+                                  <%= s.name %>
+                                </option>
+                                <% }) %>
+                                  <% } %>
+                          </select>
+                        </div>
+                        <div class="mb-0">
+                          <select class="form-control" name="term" id="filter-term" style="min-width:160px;">
+                            <option value="">Current Term</option>
+                            <option value="First">First Term</option>
+                            <option value="Second">Second Term</option>
+                            <option value="Third">Third Term</option>
+                          </select>
+                        </div>
+                        <button class="btn btn-primary" id="generate-result">
+                          <i class="fa fa-file-text-o mr-1"></i> Generate Result
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body" id="overflow">
+                      <table class="table table-striped tdata">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Roll ID</th>
+                            <th>Student Name</th>
+                            <th>Results Uploaded</th>
+                            <th>Date Modified</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% if (students.length !=0) { %>
+                            <% students.forEach(student=> { %>
+                              <tr>
+                                <td>
+                                  <%= students.indexOf(student) + 1 %>
+                                </td>
+                                <td>
+                                  <%= student.rollId %>
+                                </td>
+                                <td><strong>
+                                    <%= student.fname %>
+                                  </strong></td>
+                                <td>
+                                  <%= student?.count %>
+                                </td>
+                                <td>
+                                  <%= student.updatedAt ? new Date(student.updatedAt).toLocaleString() : '—' %>
+                                </td>
+                                <td>
+                                  <i class="btn btn-info btn-sm fa fa-edit btn-delete" data-target="#manage_result"
+                                    data-toggle="modal" id="<%= student._id %>"></i>
+                                </td>
+                              </tr>
+                              <% }) %>
+                                <% } else { %>
+                                  <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No students found.</td>
+                                  </tr>
+                                  <% } %>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
-        <script src="/public/lib/bootstrap/js/bootstrap.min.js "></script>
-        <script src="/public/js/edit.js"></script>
-        <script src="/public/js/ajaxDelete.js"></script>
-        <script src="/public/js/admin.js"></script>
+            </div>
+        </section>
+    </div>
 
-        <!-- datatable -->
-        <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
-        <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-        <!-- <script src="/public/lib/dt/datatables-responsive/js/dataTables.responsive.js"></script> -->
-        <script>
-            const url = '<%= url %>'
+    <script src="/public/lib/jquery//jquery.min.js"></script>
+    <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/public/js/edit.js"></script>
+    <script src="/public/js/ajaxDelete.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script src="/public/lib/dt/datatables/jquery.dataTables.js"></script>
+    <script src="/public/lib/dt/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+    <script>
+      const url = window.location.pathname;
 
-            $(function () {
-                $('.tdata').DataTable({
-                    responsive: true,
-                    // searching: false,
-                    language: {
-                        emptyTable: "No data available",
-                        info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                        lengthMenu: "Show _MENU_ entries",
-                    },
-                    pageLength: 10,
-                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-                    ordering: true,
-                    processing: true
-                })
-            
-                $('#prompt').DataTable({
-                    paging: false,
-                    searching: false,
-                    ordering: false,
-                    info: false,
-                    responsive: true,
-                })
-            })
-            // $(function () {
-            //     $('.tdata').DataTable({
-            //         responsive: true,
-            //         // searching: false
-            //     })
-            //
-            //     $('#prompt').DataTable({
-            //         paging: false,
-            //         searching: false,
-            //         ordering: false,
-            //         info: false,
-            //         responsive: true,
-            //     })
-            // })
+      $(function () {
+        // Restore filter selection from URL
+        const params = new URLSearchParams(window.location.search);
+        const selectedClass = params.get('sclass');
+        const selectedSession = params.get('session');
+        const selectedTerm = params.get('term');
+
+        if (selectedClass) $('#filter').val(selectedClass);
+        if (selectedSession) $('#filter-session').val(selectedSession);
+        if (selectedTerm) $('#filter-term').val(selectedTerm);
+
+        new Choices('#filter', {
+          searchEnabled: true,
+          itemSelectText: '',
+          shouldSort: false
+        });
+
+        new Choices('#filter-session', {
+          searchEnabled: true,
+          itemSelectText: '',
+          shouldSort: false
+        });
+
+        new Choices('#filter-term', {
+          searchEnabled: false,
+          itemSelectText: '',
+          shouldSort: false
+        });
+
+        $('.tdata').DataTable({
+          responsive: true,
+          language: {
+            emptyTable: "No data available",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            lengthMenu: "Show _MENU_ entries",
+          },
+          pageLength: 10,
+          lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+          ordering: true,
+          processing: true
+        });
+
+        // Note: #prompt table inside the modal is populated dynamically by edit.js
+        // — do NOT DataTable it on page load (no data yet, causes console errors)
 
 
-            $('#filter').on('change', function(){
-                const classId = this.value;
-                location.assign(`/admin/manage-result?sclass=${classId}`);
-            })
+        const reloadData = function () {
+          const classId = $('#filter').val();
+          const session = $('#filter-session').val();
+          const term = $('#filter-term').val();
+          const urlParams = new URLSearchParams();
+          if (classId) urlParams.set('sclass', classId);
+          if (session) urlParams.set('session', session);
+          if (term) urlParams.set('term', term);
+          location.assign(`/admin/manage-result?${urlParams.toString()}`);
+        };
 
-            $('#generate-result').on('click', function(){
-                const classId = document.getElementById('filter').value;
-                if(!classId){
-                    return alert('Please select a class to generate results');
-                }
-                window.open(`/admin/class-results?sclass=${classId}`, '_blank');
-            })
-        </script>
-       
-    </body>
+        $('#filter').on('change', reloadData);
+        $('#filter-session').on('change', reloadData);
+        $('#filter-term').on('change', reloadData);
+
+        $('#generate-result').on('click', function () {
+          const classId = document.getElementById('filter').value;
+          const session = document.getElementById('filter-session').value;
+          const term = document.getElementById('filter-term').value;
+
+          if (!classId) return alert('Please select a class to generate results');
+
+          let url = `/admin/class-results?sclass=${classId}`;
+          if (session) url += `&session=${session}`;
+          if (term) url += `&term=${term}`;
+
+          window.open(url, '_blank');
+        });
+      });
+    </script>
+  </body>
+
+</html>

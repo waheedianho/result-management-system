@@ -1,0 +1,136 @@
+<%- include('partials/head') %>
+<body>
+  <div id="preloader"><div class="preloader-spinner"></div></div>
+  <div class="container-fluid p-0">
+    <%- include('partials/header') %>
+    <section class="d-flex">
+      <%- include('partials/nav') %>
+      <div class="content rms-content flex-grow-1">
+
+        <div class="rms-page-header">
+          <h3><i class="fa fa-calendar mr-2" style="color:var(--primary)"></i>Manage Academic Sessions</h3>
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">Home</li>
+            <li class="breadcrumb-item">Settings</li>
+            <li class="breadcrumb-item active">Sessions</li>
+          </ol>
+        </div>
+
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn btn-primary" data-toggle="modal" data-target="#createSessionModal">
+            <i class="fa fa-plus mr-1"></i> Add Session
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header d-flex align-items-center gap-2">
+            <i class="fa fa-calendar mr-2" style="color:var(--primary)"></i>
+            <h4 class="m-0" style="font-size:15px;">Global Sessions</h4>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped" id="session_table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Session Name</th>
+                  <th>Created At</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (sessions && sessions.length > 0) { %>
+                  <% sessions.forEach((session, idx) => { %>
+                    <tr>
+                      <td><%= idx + 1 %></td>
+                      <td><strong><%= session.name %></strong></td>
+                      <td><%= new Date(session.createdAt).toLocaleDateString() %></td>
+                      <td>
+                        <button class="btn btn-danger btn-sm btn-delete" data-target="#delete" data-toggle="modal" data-id="<%= session._id %>">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr><td colspan="4" class="text-center">No sessions found.</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Create Session Modal -->
+  <div class="modal fade" id="createSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa fa-plus mr-2" style="color:var(--primary)"></i>Add Academic Session</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <form id="createSessionForm" class="mb-0">
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Session Name <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control" required placeholder="e.g. 2025/2026">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Session</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <%- include('../modal/comfirmdelete') %>
+
+  <script src="/public/lib/jquery//jquery.min.js"></script>
+  <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+  <script src="/public/js/admin.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      const pre = document.getElementById('preloader');
+      if (pre) { pre.style.opacity = '0'; setTimeout(() => pre.remove(), 300); }
+    });
+
+    $(function() {
+      $('#createSessionForm').submit(function(e) {
+        e.preventDefault();
+        const data = { name: $('[name=name]', this).val() };
+        $.post('/admin/sessions', data, function() {
+          Toastify({ text: "Session added", duration: 1500, style: { background: "green" } }).showToast();
+          setTimeout(() => location.reload(), 1500);
+        }).fail(function(err) {
+          Toastify({ text: "Failed to add session", duration: 3000, style: { background: "red" } }).showToast();
+        });
+      });
+
+      let deleteId;
+      $('.btn-delete').click(function() {
+        deleteId = $(this).data('id');
+      });
+
+      $('#comfirmDelete').click(function() {
+        if (!deleteId) return;
+        $.ajax({
+          url: '/admin/sessions/' + deleteId, type: 'DELETE',
+          success: function() {
+            $('#delete').modal('hide');
+            Toastify({ text: "Deleted successfully!", duration: 1500, style: { background: "green" } }).showToast();
+            setTimeout(() => location.reload(), 1500);
+          },
+          error: function() {
+            Toastify({ text: "Failed to delete", duration: 3000, style: { background: "red" } }).showToast();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

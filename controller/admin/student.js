@@ -8,6 +8,7 @@ const xlsx = require('xlsx');
 
 const ClassModel = require('../../model/school-class');
 const Students = require('../../model/student');
+const School = require('../../model/school');
 
 //---------------Storage----------------------------
 const storage = multer.diskStorage({
@@ -25,7 +26,7 @@ const upload = multer({ storage: storage }).single('file');
 
 const passportStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    try { fs.mkdirSync('public/student', { recursive: true }); } catch (_) {}
+    try { fs.mkdirSync('public/student', { recursive: true }); } catch (_) { }
     cb(null, 'public/student');
   },
   filename: function (req, file, cb) {
@@ -54,19 +55,34 @@ studentAdmission = (req, res) => {
 dostudentAdmission = (req, res) => {
   const isMultipart = (req.headers && String(req.headers['content-type'] || '').toLowerCase().includes('multipart/form-data'));
   if (req.body.hasOwnProperty('fname') || isMultipart) {
-    passportUpload(req, res, err => {
+    passportUpload(req, res, async err => {
       if (err) {
         const msg = err && err.code === 'LIMIT_FILE_SIZE' ? 'Passport must be <= 1MB' : (err && err.message) || 'Upload error';
         return res.status(400).json({ message: msg });
       }
       const payload = { ...req.body, schoolId: req.user.schoolId };
       if (payload.fname) payload.fname = String(payload.fname).toUpperCase();
+
+      if (!payload.rollId || payload.rollId.trim() === '') {
+        try {
+          const school = await School.findById(req.user.schoolId);
+          const prefix = school && school.name ? school.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase() : 'STU';
+          const count = await Students.countDocuments({ schoolId: req.user.schoolId });
+          const seqNum = String(count + 1).padStart(4, '0');
+          const currentYear = new Date().getFullYear();
+          payload.rollId = `${prefix}/${currentYear}/${seqNum}`;
+        } catch (e) {
+          const countFallback = await Students.countDocuments({ schoolId: req.user.schoolId });
+          payload.rollId = `STU/${new Date().getFullYear()}/${String(countFallback + 1).padStart(4, '0')}`;
+        }
+      }
+
       if (req.file && req.file.filename) {
         payload.photoUrl = '/public/student/' + req.file.filename;
       }
       Students.create(payload)
         .then(resp => res.json(resp))
-        .catch(err => res.json(err));
+        .catch(err => res.status(400).json({ message: err.message || 'Error creating student', error: err }));
     });
   } else {
     upload(req, res, err => {
@@ -144,12 +160,12 @@ dostudentAdmission = (req, res) => {
 manageStudent = async (req, res) => {
   try {
     const { sclass } = req.query || {};
-    const filter = { schoolId: req.user.schoolId };
+    const filter = { schoolId: req.user.schoolId, deleted: { $ne: true } };
     if (sclass) filter.sclass = sclass;
 
     // Teacher restriction
     if (req.user.role === 'teacher' && req.user.assignedClass) {
-        filter.sclass = req.user.assignedClass;
+      filter.sclass = req.user.assignedClass;
     }
 
     const [docs, classes] = await Promise.all([
@@ -173,18 +189,18 @@ manageStudent = async (req, res) => {
 };
 
 deleteStudent = (req, res) => {
-  Students.findOneAndDelete({ _id: req.params.id, schoolId: req.user.schoolId })
+  Students.findOneAndUpdate({ _id: req.params.id, schoolId: req.user.schoolId }, { $set: { deleted: true } }, { new: true })
     .then(resp => res.json(resp))
     .catch(err => res.json(err));
 };
 
 getStudents = (req, res) => {
-  const query = { schoolId: req.user.schoolId };
+  const query = { schoolId: req.user.schoolId, deleted: { $ne: true } };
   if (req.params.sclass) query.sclass = req.params.sclass;
 
   // Teacher restriction
   if (req.user.role === 'teacher' && req.user.assignedClass) {
-      query.sclass = req.user.assignedClass;
+    query.sclass = req.user.assignedClass;
   }
 
   Students.find(query).populate('result').then(docs => res.json(docs));
@@ -218,9 +234,9 @@ getStudentUploadTemplate = async (req, res) => {
 
     // Teacher restriction
     if (req.user.role === 'teacher' && req.user.assignedClass && classId !== req.user.assignedClass.toString()) {
-        return res.status(403).json({ message: "Unauthorized to get template for this class" });
+      return res.status(403).json({ message: "Unauthorized to get template for this class" });
     }
-    
+
     // Verify class belongs to school
     const targetClass = await ClassModel.findOne({ _id: classId, schoolId: req.user.schoolId });
     if (!targetClass) return res.status(404).json({ message: "Class not found" });

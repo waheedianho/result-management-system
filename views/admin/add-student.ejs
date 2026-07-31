@@ -1,259 +1,279 @@
-<!DOCTYPE html>
-<html lang="en">
 <%- include('partials/head') %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
-    <body>
-        <div class="container-fluid">
-            <%- include('partials/header') %>
-                <section class="row">
-                    <%- include('partials/nav') %>
+  <body>
+    <div id="preloader">
+      <div class="preloader-spinner"></div>
+    </div>
+    <div class="container-fluid p-0">
+      <%- include('partials/header') %>
+        <section class="d-flex">
+          <%- include('partials/nav') %>
+            <div class="content rms-content flex-grow-1">
 
-                        <div class="content offset-lg-3 col-lg-9 col-md-12 p-0 ">
-                            <div class="w-100 p-2 bg-white mt-2 mb-2">
-                                <h3 class=" modal-header">Student Admission</h3>
-                                <div class="breadcrumb bg-transparent p-0">
-                                    <div class="breadcrumb-item">Home</div>
-                                    <div class="breadcrumb-item">Students</div>
-                                    <div class="breadcrumb-item">Student Admission</div>
-                                </div>
+              <!-- Page Header -->
+              <div class="rms-page-header">
+                <h3><i class="fa fa-user-plus mr-2" style="color:var(--primary)"></i>Student Admission</h3>
+                <ol class="breadcrumb mb-0">
+                  <li class="breadcrumb-item">Home</li>
+                  <li class="breadcrumb-item">Students</li>
+                  <li class="breadcrumb-item active">Add Student</li>
+                </ol>
+              </div>
+
+              <!-- Bulk Upload Card -->
+              <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fa fa-upload mr-2" style="color:var(--primary)"></i>
+                    <h5 class="m-0" style="font-size:14px;">Bulk Upload via Excel</h5>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <select class="form-control mr-2" id="select_student_class" style="min-width:180px;">
+                      <option value="">Select Class Template</option>
+                      <% classes.forEach(element=> { %>
+                        <option value="<%= element._id %>">
+                          <%= element.cname %>
+                        </option>
+                        <% }) %>
+                    </select>
+                    <button id="download_student_template" type="button" class="btn btn-primary">
+                      <i class="fa fa-download mr-1"></i> Download Template
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="alert alert-success alert-dismissible fade show" role="alert" id="feedback">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    <strong>File uploaded successfully</strong>
+                  </div>
+                  <form action="/admin/add-student" class="dropzone" id="upload-widget" enctype="multipart/form-data">
+                  </form>
+                </div>
+              </div>
+
+              <!-- Manual Entry Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="m-0" style="font-size:14px;"><i class="fa fa-pencil mr-2"
+                      style="color:var(--primary)"></i>Manual Student Entry</h5>
+                </div>
+                <div class="card-body">
+                  <%- include('partials/flash') %>
+                    <h4 id="err" style="display:none;font-size:14px;color:#ef4444;margin-bottom:12px;">Please fill in
+                      all required fields.</h4>
+
+                    <form action="" method="POST" enctype="multipart/form-data">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="fname">Full Name</label>
+                            <input type="text" name="fname" id="fname" class="form-control"
+                              placeholder="Student full name">
+                          </div>
+                          <div class="form-group">
+                            <label for="rollId">Roll ID</label>
+                            <input type="text" name="rollId" id="rollId" class="form-control" placeholder="e.g. STU001">
+                          </div>
+                          <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" class="form-control"
+                              placeholder="student@example.com">
+                          </div>
+                          <div class="form-group">
+                            <label>Gender</label>
+                            <div class="d-flex gap-3 mt-1">
+                              <label class="d-flex align-items-center mr-2"
+                                style="font-weight:normal;color:var(--text-primary)">
+                                <input type="radio" name="gender" id="gender" value="male"> Male
+                              </label>
+                              <label class="d-flex align-items-center mr-2"
+                                style="font-weight:normal;color:var(--text-primary)">
+                                <input type="radio" name="gender" id="gender" value="female"> Female
+                              </label>
+                              <label class="d-flex align-items-center mr-2"
+                                style="font-weight:normal;color:var(--text-primary)">
+                                <input type="radio" name="gender" id="gender" value="other"> Other
+                              </label>
                             </div>
-                            <div class="card m-2 p-3">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <h5>For already typed Students</h5>
-                                    <div class="d-flex">
-                                        <select class="form-control mr-3" id="select_student_class">
-                                            <option value="">Select Class Template</option>
-                                            <% classes.forEach(element => { %>
-                                                <option value="<%= element._id %>"><%= element.cname %></option>
-                                            <% }) %>
-                                        </select>
-                                        <button id="download_student_template" type="button" class="btn btn-success">Download Template</button>
-                                    </div>
-                                </div>
-                                <div class="alert alert-success alert-dismissible fade show" role="alert" id="feedback">
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                  </button>
-                                    <strong>FIle upload successfully</strong>
-                                </div>
-                                <form action="/admin/add-student" class="dropzone" id="upload-widget" enctype="multipart/form-data"></form>
-                            </div>
-
-                            <div class="card m-2 p-3">
-
-                                <h5>Fill the student info</h5>
-                                <%- include('partials/flash') %>
-                                    <h4 id="err">Fill the corresponding value below</h4>
-
-                                    <form action="" method="POST" class="" enctype="multipart/form-data">
-                                        <div class="form-row m-3">
-                                            <label for="fname" class="col-2">Full Name: </label>
-                                            <div class="col-10">
-                                                <input type="text" name="fname" id="fname" class="form-control">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="rollId" class="col-2">Roll ID: </label>
-                                            <div class="col-10">
-                                                <input type="text" name="rollId" id="rollId" class="form-control">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="Email" class="col-2">Email: </label>
-                                            <div class="col-10">
-                                                <input type="email" name="email" id="email" class="form-control">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="gender" class="col-2">Gender: </label>
-                                            <div class="col-10">
-                                                <input type="radio" name="gender" id="gender" value="male">Male
-                                                <input type="radio" name="gender" id="gender" value="female">Female
-                                                <input type="radio" name="gender" id="gender" value="other">Other
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="class" class="col-2">Class: </label>
-                                            <div class="col-10">
-                                                <select name="class" id="sclass" class="form-control">
-                                                    <option value="">Select class</option>
-                                                    <% classes.forEach(element=> { %>
-                                                        <option value="<%= element._id %>" class="rmd">
-                                                            <%= element.cname %>
-                                                        </option>
-                                                        <% }) %>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="dob" class="col-2">DOB: </label>
-                                            <div class="col-10">
-                                                <input type="date" name="dob" id="dob" class="form-control">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="number" class="col-2">Phone No: </label>
-                                            <div class="col-10">
-                                                <input type="tel" name="phone_no" id="phone_no" class="form-control">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="address" class="col-2">Address: </label>
-                                            <div class="col-10">
-                                                <input type="text" name="address" id="address" class="form-control">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="passport" class="col-2">Passport: </label>
-                                            <div class="col-10">
-                                                <input type="file" name="passport" id="passport" class="form-control-file" accept="image/*">
-                                                <small id="passportHelp" class="text-danger d-none">File must be ≤ 1MB</small>
-                                                <img id="passportPreview" src="" alt="" style="display:none;max-height:120px;margin-top:10px;border:1px solid #ccc;border-radius:4px;"/>
-                                            </div>
-                                        </div>
-
-                                        <button type="button" class="btn btn-success float-right" id="formSubmit">Add</button>
-
-                                    </form>
-                            </div>
-
+                          </div>
                         </div>
-                </section>
-        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="sclass">Class</label>
+                            <select name="class" id="sclass" class="form-control">
+                              <option value="">Select class</option>
+                              <% classes.forEach(element=> { %>
+                                <option value="<%= element._id %>" class="rmd">
+                                  <%= element.cname %>
+                                </option>
+                                <% }) %>
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" name="dob" id="dob" class="form-control">
+                          </div>
+                          <div class="form-group">
+                            <label for="phone_no">Phone Number</label>
+                            <input type="tel" name="phone_no" id="phone_no" class="form-control"
+                              placeholder="+234 800 000 0000">
+                          </div>
+                          <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" name="address" id="address" class="form-control"
+                              placeholder="Student address">
+                          </div>
+                        </div>
+                      </div>
 
-        <script src="../../public/lib/jquery//jquery.min.js "></script>
-        <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
-        <script src="../../public/lib/dropzone-5.7.0/dist/dropzone.js"></script>
-        <script src="../../public/js/admin.js"></script>
+                      <div class="form-group">
+                        <label for="passport">Passport Photo</label>
+                        <input type="file" name="passport" id="passport" class="form-control-file" accept="image/*">
+                        <small id="passportHelp" class="text-danger d-none">File must be ≤ 1MB</small>
+                        <img id="passportPreview" src="" alt=""
+                          style="display:none;max-height:120px;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);" />
+                      </div>
 
-        <script>
-            $(document).ready(() => {
-                $('#formSubmit').on('click', function() {
-                    let fname = $('#fname').val().toString().toUpperCase(),
-                        rollId = $('#rollId').val(),
-                        email = $('#email').val(),
-                        gender = $('#gender').val(),
-                        sclass = $('#sclass').val(),
-                        address = $('#address').val(),
-                        phone_no = $('#phone_no').val(),
-                        dob = $('#dob').val();
-                    const passFile = $('#passport')[0] && $('#passport')[0].files && $('#passport')[0].files[0] ? $('#passport')[0].files[0] : null;
-                    if (passFile && passFile.size > 1048576) {
-                        return alert('Passport image must be ≤ 1MB');
-                    }
+                      <button type="button" class="btn btn-primary" id="formSubmit">
+                        <i class="fa fa-user-plus mr-1"></i> Add Student
+                      </button>
+                    </form>
+                </div>
+              </div>
 
-                    if ((fname.length && rollId.length && email.length && gender.length && sclass.length && dob.length) === 0) {
-                        $('#err').css({
-                            display: "block",
-                        })
-                    } else {
-                        const fd = new FormData();
-                        fd.append('fname', fname);
-                        fd.append('rollId', rollId);
-                        fd.append('email', email);
-                        fd.append('gender', gender);
-                        fd.append('sclass', sclass);
-                        fd.append('address', address);
-                        fd.append('phone_no', phone_no);
-                        fd.append('dob', dob);
-                        if (passFile) fd.append('passport', passFile);
-                        $.ajax({
-                            url: '/admin/add-student',
-                            method: 'POST',
-                            data: fd,
-                            processData: false,
-                            contentType: false,
-                            success: function(data) {
-                                $('.flash').css({ display: 'flex' })
-                                $('#fname').val("")
-                                $('#rollId').val("")
-                                $('#email').val("")
-                                $('#sclass').val("")
-                                $('#dob').val("")
-                                $('#phone_no').val("")
-                                $('#address').val("")
-                                $('#passport').val("")
-                                $('#passportPreview').hide().attr('src','')
-                                $('#passportHelp').addClass('d-none')
-                            }
-                        })
-                    }
+            </div>
+        </section>
+    </div>
 
-                })
+    <script src="/public/lib/jquery//jquery.min.js"></script>
+    <script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/public/lib/dropzone-5.7.0/dist/dropzone.js"></script>
+    <script src="/public/js/admin.js"></script>
 
-                $('input').on('focus', () => {
-                    if ($('#err').css('display') != "none" || $('.alert').css('display') != "none") {
-                        console.log('err display')
-                        $('#err').hide()
-                        $('.alert').hide()
-                    }
-                })
-                $('#passport').on('change', function() {
-                    const f = this.files && this.files[0] ? this.files[0] : null;
-                    if (!f) return;
-                    if (f.size > 1048576) {
-                        $(this).val('')
-                        $('#passportHelp').removeClass('d-none')
-                        $('#passportPreview').hide().attr('src','')
-                        return;
-                    }
-                    $('#passportHelp').addClass('d-none')
-                    const reader = new FileReader();
-                    reader.onload = function(e) { $('#passportPreview').attr('src', e.target.result).show(); };
-                    reader.readAsDataURL(f);
-                })
+    <script>
+      $(document).ready(() => {
+        // Init Choices.js for single class selects
+        new Choices('#sclass', {
+          searchEnabled: false,
+          itemSelectText: '',
+          shouldSort: false
+        });
+
+        new Choices('#select_student_class', {
+          searchEnabled: false,
+          itemSelectText: '',
+          shouldSort: false
+        });
+
+        $('#formSubmit').on('click', function () {
+          let fname = $('#fname').val().toString().toUpperCase(),
+            rollId = $('#rollId').val(),
+            email = $('#email').val(),
+            gender = $('input[name="gender"]:checked').val() || '',
+            sclass = $('#sclass').val(),
+            address = $('#address').val(),
+            phone_no = $('#phone_no').val(),
+            dob = $('#dob').val();
+          const passFile = $('#passport')[0] && $('#passport')[0].files && $('#passport')[0].files[0] ? $('#passport')[0].files[0] : null;
+
+          if (passFile && passFile.size > 1048576) return alert('Passport image must be ≤ 1MB');
+
+          if (fname.length === 0 || sclass.length === 0) {
+            $('#err').show();
+          } else {
+            const fd = new FormData();
+            fd.append('fname', fname);
+            fd.append('rollId', rollId);
+            fd.append('email', email);
+            fd.append('gender', gender);
+            fd.append('sclass', sclass);
+            fd.append('address', address);
+            fd.append('phone_no', phone_no);
+            fd.append('dob', dob);
+            if (passFile) fd.append('passport', passFile);
+            $.ajax({
+              url: '/admin/add-student',
+              method: 'POST',
+              data: fd,
+              processData: false,
+              contentType: false,
+              success: function () {
+                $('.flash').css({ display: 'flex' }).addClass('alert-success');
+                $('#message').text('Student added successfully!');
+                $('#fname, #rollId, #email, #sclass, #dob, #phone_no, #address, #passport').val('');
+                $('#passportPreview').hide().attr('src', '');
+                $('#passportHelp').addClass('d-none');
+              },
+              error: function(err) {
+                alert('Error: ' + (err.responseJSON ? err.responseJSON.message : 'Failed to add student.'));
+              }
+            });
+          }
+        });
+
+        $('input').on('focus', () => {
+          if ($('#err').css('display') != "none") $('#err').hide();
+          if ($('.alert').css('display') != "none") $('.alert').hide();
+        });
+
+        $('#passport').on('change', function () {
+          const f = this.files && this.files[0] ? this.files[0] : null;
+          if (!f) return;
+          if (f.size > 1048576) {
+            $(this).val('');
+            $('#passportHelp').removeClass('d-none');
+            $('#passportPreview').hide().attr('src', '');
+            return;
+          }
+          $('#passportHelp').addClass('d-none');
+          const reader = new FileReader();
+          reader.onload = function (e) { $('#passportPreview').attr('src', e.target.result).show(); };
+          reader.readAsDataURL(f);
+        });
+
+        Dropzone.options.uploadWidget = {
+          maxFiles: 1,
+          dictDefaultMessage: 'Drop your .xlsx file here or click to upload',
+          acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          init: function () {
+            this.on("success", function (file, responseText) {
+              console.log(responseText);
+              this.removeFile(file);
+              $('#feedback').removeAttr('id');
+            });
+          }
+        };
+
+        $('#download_student_template').click(() => {
+          const classId = $('#select_student_class').val();
+          if (!classId) return alert('Please select a class');
+          fetch(`/admin/students/template/${classId}`)
+            .then(response => {
+              if (!response.ok) throw new Error('Network error');
+              return response.blob();
             })
+            .then(blob => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              a.download = 'student_template.xlsx';
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+            })
+            .catch(err => {
+              console.error(err);
+              alert('Failed to download template. Please try again.');
+            });
+        });
+      });
+    </script>
+  </body>
 
-            Dropzone.options.uploadWidget = {
-                    maxFiles: 1,
-                    dictDefaultMessage: 'Upload ur xlsx file here',
-                    acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    init: function() {
-                        this.on("success", function(file, responseText) {
-                            // alert("Added file");
-                            console.log(responseText)
-                            this.removeFile(file)
-                            $('#feedback').removeAttr('id')
-                        });
-                    }
-                }
-                // Download student template by class
-                $('#download_student_template').click(() => {
-                    const classId = $('#select_student_class').val();
-                    if (!classId) {
-                        return alert('Please select a class');
-                    }
-                    fetch(`/admin/students/template/${classId}`)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network error');
-                            return response.blob();
-                        })
-                        .then(blob => {
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = 'student_template.xlsx';
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            alert('Failed to download template. Please try again.');
-                        })
-                });
-
-        </script>
-    </body>
-
-</html>
+  </html>

@@ -1,140 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
 <%- include('partials/head') %>
 
-    <body>
-        <div class="container-fluid">
-            <%- include('partials/header') %>
-                <section class="row">
-                    <%- include('partials/nav') %>
+<body>
+<div id="preloader"><div class="preloader-spinner"></div></div>
+<div class="container-fluid p-0">
+  <%- include('partials/header') %>
+  <section class="d-flex">
+    <%- include('partials/nav') %>
+    <div class="content rms-content flex-grow-1">
 
-                        <div class="content col-lg-9 col-md-12 p-0 ">
-                            <div class="w-100 p-2 bg-white mt-2 mb-2">
-                                <h3 class=" modal-header">Student Admission</h3>
-                                <div class="breadcrumb bg-transparent p-0">
-                                    <div class="breadcrumb-item">Home</div>
-                                    <div class="breadcrumb-item">Result</div>
-                                    <div class="breadcrumb-item">Add Result</div>
-                                </div>
-                            </div>
+      <!-- Page Header -->
+      <div class="rms-page-header">
+        <h3><i class="fa fa-lock mr-2" style="color:var(--primary)"></i>Change Password</h3>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">Home</li>
+          <li class="breadcrumb-item">Account</li>
+          <li class="breadcrumb-item active">Change Password</li>
+        </ol>
+      </div>
 
-                            <div class="card m-2 p-3">
-                                <h5>Declare a Result</h5>
-                                <%- include('partials/flash') %>
-                                    <h4 id="err">Fill the corresponding value below</h4>
-
-                                    <form action="" method="POST" class="">
-                                        <div class="form-row m-3">
-                                            <label for="classes" class="col-2">Class: </label>
-                                            <div class="col-10">
-
-
-                                                <select name="classes" id="classes" class="form-control">
-                                                    <option value="">Select class</option>
-                                                    <% classes.forEach(element => { %>
-                                                        <option value="<%= element.cname %>"> <%= element.cname %> </option>
-                                                        <% }) %>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <label for="sname" class="col-2">Student Name: </label>
-                                            <div class="col-10">
-                                                <select name="sname" id="sname" class="form-control">
-                                                    <option value="">Select class</option>
-                                                    <% students.forEach(element => { %>
-                                                        <option value="<%= element.fname %>"> <%= element.fname %> </option>
-                                                        <% }) %>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row m-3">
-                                            <div class="col-7">
-                                                <div class="row">
-                                                    <label for="classes" class="col-2">Subjet: </label>
-                                                    <div class="col-10">
-                                                        <select name="classes" id="classes" class="form-control">
-                                                             <option value="">Select class</option>
-                                                             <% subjects.forEach(element => { %>
-                                                                <option value="<%= element.sname %>"> <%= element.sname %> </option>
-                                                                <% }) %>
-                                                         </select>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                            <div class="col-5">
-                                                <div class="row">
-                                                    <label for="classes" class="col-4 text-center">Score: </label>
-                                                    <div class="col-8">
-                                                        <input type="text" class=form-control>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-
-                                        <button type="button" class="btn btn-success float-right">Add</button>
-
-                                    </form>
-                            </div>
-                        </div>
-                </section>
+      <!-- Form Card -->
+      <div class="card" style="max-width:520px;">
+        <div class="card-header">
+          <h5 class="m-0" style="font-size:14px;"><i class="fa fa-key mr-2" style="color:var(--primary)"></i>Update Your Password</h5>
         </div>
+        <div class="card-body">
+          <%- include('partials/flash') %>
+          <h4 id="err" style="display:none;font-size:14px;color:#ef4444;margin-bottom:12px;">Please fill in all fields below.</h4>
 
-        <script src="../../public/lib/jquery//jquery.min.js "></script>
-        <script src="../../public/lib/bootstrap/js/bootstrap.min.js "></script>
-        <script src="../../public/js/admin.js"></script>
+          <form action="/admin/change-password" method="POST">
+            <div class="form-group">
+              <label for="oldPass">Current Password</label>
+              <input type="password" name="oldPass" id="oldPass" class="form-control" placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+              <label for="newPass">New Password</label>
+              <input type="password" name="newPass" id="newPass" class="form-control" placeholder="Enter new password">
+            </div>
+            <div class="form-group mb-4">
+              <label for="confirmPass">Confirm New Password</label>
+              <input type="password" name="confirmPass" id="confirmPass" class="form-control" placeholder="Repeat new password">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-save mr-1"></i> Update Password
+            </button>
+          </form>
+        </div>
+      </div>
 
+    </div>
+  </section>
+</div>
 
-        <script>
-            // console.log(students)
-            $(document).ready(() => {
-                $('.btn').on('click', function() {
-                    let fname = $('#fname').val().toString().toUpperCase(),
-                        rollId = $('#rollId').val(),
-                        email = $('#email').val(),
-                        gender = $('#gender').val(),
-                        sclass = $('#sclass').val(),
-                        dob = $('#dob').val();
-
-                    if ((fname.length && rollId.length && email.length && gender.length && sclass.gender && dob.length) === 0) {
-                        $('#err').css({
-                            display: "block",
-                        })
-                    } else {
-                        $.post('/admin/add-student', {
-                            fname: fname,
-                            rollId: rollId,
-                            email: email,
-                            gender: gender,
-                            sclass: sclass,
-                            dob: dob
-                        }, (data) => {
-                            $('.flash').css({
-                                display: 'flex'
-                            })
-                            console.log(data)
-                            $('#sname').val("")
-
-                        })
-                    }
-
-                })
-
-                $('input').on('focus', () => {
-                    if ($('#err').css('display') != "none" || $('.alert').css('display') != "none") {
-                        console.log('err display')
-                        $('#err').hide()
-                        $('.alert').hide()
-                    }
-                })
-            })
-        </script>
-    </body>
-
+<script src="/public/lib/jquery//jquery.min.js"></script>
+<script src="/public/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="/public/js/admin.js"></script>
+</body>
 </html>

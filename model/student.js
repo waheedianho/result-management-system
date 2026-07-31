@@ -18,7 +18,6 @@ const studentSchema = new Schema(
         },
         gender: {
             type: String,
-            required: true,
         },
         sclass: {
             type: Schema.Types.ObjectId,
@@ -27,7 +26,6 @@ const studentSchema = new Schema(
         },
         dob: {
             type: Date,
-            required: true,
         },
         phone_no: {
             type: String,
@@ -42,6 +40,10 @@ const studentSchema = new Schema(
         },
         photoUrl: {
             type: String,
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
         },
         result: [{ type: Schema.Types.ObjectId, ref: "results" }],
     },
