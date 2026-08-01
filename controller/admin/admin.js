@@ -172,10 +172,20 @@ createSchool = async (req, res) => {
     if (req.user.role !== 'super-admin') {
       return res.status(403).send("Unauthorized");
     }
-    const school = await School.create(req.body);
+    // Strip empty strings so sparse unique index on email works correctly
+    const data = Object.fromEntries(
+      Object.entries(req.body).filter(([_, v]) => v !== '')
+    );
+    const school = await School.create(data);
     res.json(school);
   } catch (error) {
-    res.status(500).json(error);
+    console.error('Error creating school:', error);
+    // Provide a meaningful message for duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue || {})[0] || 'field';
+      return res.status(409).json({ message: `A school with that ${field} already exists.` });
+    }
+    res.status(500).json({ message: error.message || 'Internal server error' });
   }
 };
 
@@ -184,10 +194,19 @@ updateSchool = async (req, res) => {
     if (req.user.role !== 'super-admin') {
       return res.status(403).send("Unauthorized");
     }
-    const school = await School.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Strip empty strings so sparse unique index on email works correctly
+    const data = Object.fromEntries(
+      Object.entries(req.body).filter(([_, v]) => v !== '')
+    );
+    const school = await School.findByIdAndUpdate(req.params.id, data, { new: true });
     res.json(school);
   } catch (error) {
-    res.status(500).json(error);
+    console.error('Error updating school:', error);
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue || {})[0] || 'field';
+      return res.status(409).json({ message: `A school with that ${field} already exists.` });
+    }
+    res.status(500).json({ message: error.message || 'Internal server error' });
   }
 };
 
