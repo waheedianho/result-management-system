@@ -10,9 +10,8 @@ async function createSuperAdmin() {
         await mongoose.connect(dbUrl);
         console.log('Connected to database');
 
-        const email = process.env.SUPER_ADMIN_EMAIL; // 'superadmin@example.com';
-        const password = process.env.SUPER_ADMIN_PSWRD; //'Password123!';
-
+        const email = process.env.SUPER_ADMIN_EMAIL;
+        const password = process.env.SUPER_ADMIN_PSWRD;
         const existing = await Staff.findOne({ email });
         if (existing) {
             console.log('Super admin already exists with email:', email);
