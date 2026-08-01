@@ -13,6 +13,7 @@ const schoolSchema = new Schema(
     email: {
       type: String,
       unique: true,
+      sparse: true,   // allows multiple docs with null/undefined email
     },
     // White-labelling / branding fields
     logoUrl: {
@@ -43,6 +44,18 @@ const schoolSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// Convert empty-string email to undefined so the sparse unique index works correctly
+schoolSchema.pre('save', function (next) {
+  if (this.email === '') this.email = undefined;
+  next();
+});
+schoolSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+  if (update && update.$set && update.$set.email === '') update.$set.email = undefined;
+  if (update && update.email === '') update.email = undefined;
+  next();
+});
 
 const School = mongoose.model('schools', schoolSchema);
 module.exports = School;
